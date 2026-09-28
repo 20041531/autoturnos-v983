@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AutoTurnos IA</title>
+<style>body{font-family:Arial;background:#0f0f0f;color:#fff;margin:0;padding:20px}h1,h2{text-align:center}.planes,.packs{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin:20px 0}.plan,.pack{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:20px;width:300px;text-align:center}button{background:#00ff88;color:#000;border:0;padding:12px 20px;border-radius:8px;cursor:pointer;margin:5px;font-weight:bold;width:90%}button:hover{background:#00cc6a}.precio{font-size:22px;color:#00ff88;font-weight:bold}.sub{font-size:12px;color:#aaa}</style>
+</head><body>
+<h1>AutoTurnos IA V9.8.3</h1>
+<p style="text-align:center">Sistema de turnos con IA para tu negocio</p>
+<h2>Planes - Elegí ARS o USD (Con comisión afiliados 15%)</h2>
+<div class="planes">
+<div class="plan"><h3>Básico</h3><p>500 conversaciones/mes</p><p class="precio">$25.000 ARS / $25 USD</p><button onclick="comprarPlan('basico',25000,'ARS')">Pagar $25.000 ARS</button><button onclick="comprarPlan('basico',25,'USD')">Pagar $25 USD</button></div>
+<div class="plan"><h3>Pro ⭐</h3><p>1500 conversaciones/mes</p><p class="precio">$35.000 ARS / $35 USD</p><button onclick="comprarPlan('medio',35000,'ARS')">Pagar $35.000 ARS</button><button onclick="comprarPlan('medio',35,'USD')">Pagar $35 USD</button></div>
+<div class="plan"><h3>Premium</h3><p>Ilimitado</p><p class="precio">$45.000 ARS / $45 USD</p><button onclick="comprarPlan('premium',45000,'ARS')">Pagar $45.000 ARS</button><button onclick="comprarPlan('premium',45,'USD')">Pagar $45 USD</button></div>
+</div>
+<h2>Packs Extra - Solo USD (Sin comisión - 100% ganancia tuya)</h2>
+<div class="packs">
+<div class="pack"><h3>250 Conversaciones</h3><p class="precio">$22 USD</p><p class="sub">Costo $14 / Tu ganancia $8</p><button onclick="comprarPack(250,22)">Comprar por $22 USD</button></div>
+<div class="pack"><h3>500 Conversaciones</h3><p class="precio">$39 USD</p><p class="sub">Costo $28 / Tu ganancia $11</p><button onclick="comprarPack(500,39)">Comprar por $39 USD</button></div>
+<div class="pack"><h3>1000 Conversaciones</h3><p class="precio">$69 USD</p><p class="sub">Costo $56 / Tu ganancia $13</p><button onclick="comprarPack(1000,69)">Comprar por $69 USD</button></div>
+</div>
+<script>
+let EMAIL = localStorage.getItem('email');
+if(!EMAIL){ EMAIL=prompt('Ingresa tu email para comprar:'); localStorage.setItem('email',EMAIL); }
+function comprarPlan(plan,precio,moneda){ fetch('/api/pagos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'plan',plan,precio,moneda,email:EMAIL})}).then(r=>r.json()).then(d=>window.location=d.url) }
+function comprarPack(cant,precio){ fetch('/api/pagos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'pack',cantidad:cant,precio,moneda:'USD',email:EMAIL})}).then(r=>r.json()).then(d=>window.location=d.url) }
+</script>
+</body></html>

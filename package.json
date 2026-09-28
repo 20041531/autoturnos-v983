@@ -1,0 +1,9 @@
+{
+  "name": "autoturnos-v983",
+  "version": "9.8.3",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "mercadopago": "^1.5.17",
+    "openai": "^4.0.0"
+  }
+}
