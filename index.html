@@ -1,24 +1,43 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AutoTurnos IA</title>
-<style>body{font-family:Arial;background:#0f0f0f;color:#fff;margin:0;padding:20px}h1,h2{text-align:center}.planes,.packs{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin:20px 0}.plan,.pack{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:20px;width:300px;text-align:center}button{background:#00ff88;color:#000;border:0;padding:12px 20px;border-radius:8px;cursor:pointer;margin:5px;font-weight:bold;width:90%}button:hover{background:#00cc6a}.precio{font-size:22px;color:#00ff88;font-weight:bold}.sub{font-size:12px;color:#aaa}</style>
-</head><body>
-<h1>AutoTurnos IA V9.8.3</h1>
-<p style="text-align:center">Sistema de turnos con IA para tu negocio</p>
-<h2>Planes - Elegí ARS o USD (Con comisión afiliados 15%)</h2>
-<div class="planes">
-<div class="plan"><h3>Básico</h3><p>500 conversaciones/mes</p><p class="precio">$25.000 ARS / $25 USD</p><button onclick="comprarPlan('basico',25000,'ARS')">Pagar $25.000 ARS</button><button onclick="comprarPlan('basico',25,'USD')">Pagar $25 USD</button></div>
-<div class="plan"><h3>Pro ⭐</h3><p>1500 conversaciones/mes</p><p class="precio">$35.000 ARS / $35 USD</p><button onclick="comprarPlan('medio',35000,'ARS')">Pagar $35.000 ARS</button><button onclick="comprarPlan('medio',35,'USD')">Pagar $35 USD</button></div>
-<div class="plan"><h3>Premium</h3><p>Ilimitado</p><p class="precio">$45.000 ARS / $45 USD</p><button onclick="comprarPlan('premium',45000,'ARS')">Pagar $45.000 ARS</button><button onclick="comprarPlan('premium',45,'USD')">Pagar $45 USD</button></div>
-</div>
-<h2>Packs Extra - Solo USD (Sin comisión - 100% ganancia tuya)</h2>
-<div class="packs">
-<div class="pack"><h3>250 Conversaciones</h3><p class="precio">$22 USD</p><p class="sub">Costo $14 / Tu ganancia $8</p><button onclick="comprarPack(250,22)">Comprar por $22 USD</button></div>
-<div class="pack"><h3>500 Conversaciones</h3><p class="precio">$39 USD</p><p class="sub">Costo $28 / Tu ganancia $11</p><button onclick="comprarPack(500,39)">Comprar por $39 USD</button></div>
-<div class="pack"><h3>1000 Conversaciones</h3><p class="precio">$69 USD</p><p class="sub">Costo $56 / Tu ganancia $13</p><button onclick="comprarPack(1000,69)">Comprar por $69 USD</button></div>
-</div>
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>autoturnos.com.ar</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-white text-black">
 <script>
-let EMAIL = localStorage.getItem('email');
-if(!EMAIL){ EMAIL=prompt('Ingresa tu email para comprar:'); localStorage.setItem('email',EMAIL); }
-function comprarPlan(plan,precio,moneda){ fetch('/api/pagos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'plan',plan,precio,moneda,email:EMAIL})}).then(r=>r.json()).then(d=>window.location=d.url) }
-function comprarPack(cant,precio){ fetch('/api/pagos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'pack',cantidad:cant,precio,moneda:'USD',email:EMAIL})}).then(r=>r.json()).then(d=>window.location=d.url) }
+const ADMIN_EMAIL="dariobrugo1@gmail.com"; const CLAVE_MAESTRA="edwardybella2026";
+function getTotal(p,m){let b=p==='basico'?25000:p==='pro'?35000:45000; let t=b*m; if(m===12) t*=0.9; return t;}
+let planActual=null, mesesSel=1;
+function abrirPanel(plan,meses){planActual=plan; mesesSel=meses; document.getElementById('panelCalendario').classList.remove('hidden'); document.getElementById('tituloPanel').textContent=plan.toUpperCase()+' - '+meses+' meses - Total $'+getTotal(plan,meses).toLocaleString()+(meses===12?' -10% OFF':''); document.getElementById('configBasico').classList.add('hidden');document.getElementById('configPro').classList.add('hidden');document.getElementById('configPremium').classList.add('hidden'); if(plan==='basico')document.getElementById('configBasico').classList.remove('hidden'); if(plan==='pro')document.getElementById('configPro').classList.remove('hidden'); if(plan==='premium')document.getElementById('configPremium').classList.remove('hidden'); document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});}
+function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. Te contactamos para activar MercadoPago.');}
 </script>
+
+<header class="flex justify-between p-5 max-w-6xl mx-auto border-b sticky top-0 bg-white z-20"><b>autoturnos.com.ar</b><a href="#afiliados" class="text-[11px] border-2 border-black rounded-full px-3 py-1 font-black">AFILIADOS</a></header>
+
+<section class="max-w-6xl mx-auto p-6 text-center">
+<h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras</p>
+<div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
+<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO</b><h3 class="font-black text-xl">$25k / $25 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>1 idioma ES O EN</li><li>Tiempo fijo 30m</li><li>Tacha Sáb y Dom</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('basico',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('basico',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('basico',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+<div class="border-[3px] border-black rounded-[28px] p-6 bg-zinc-50 relative"><div class="absolute -top-3 left-6 bg-black text-white text-[10px] px-3 py-1 rounded-full">MÁS ELEGIDO</div><b class="text-xs">PRO</b><h3 class="font-black text-xl">$35k / $35 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>1 idioma ES O EN</li><li>Pregunta servicio y suma tiempo</li><li>Tacha cualquier día</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('pro',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('pro',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('pro',12)" class="bg-black text-white rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">PREMIUM</b><h3 class="font-black text-xl">$45k / $45 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>2 idiomas ES+EN auto</li><li>Servicios variables</li><li>Turnos grupales 3 cupos x hora</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('premium',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('premium',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('premium',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+</div>
+</section>
+
+<section id="panelCalendario" class="hidden max-w-6xl mx-auto p-6 border-[3px] border-black rounded-[28px] mb-10">
+<h2 id="tituloPanel" class="font-black text-xl"></h2>
+<div class="grid md:grid-cols-2 gap-6 mt-4">
+<div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Idioma, horario 09-18, tiempo fijo</div>
+<div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Servicios ej: corte 30, teñido 20 + días a tachar</div>
+<div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> ES+EN + grupal + servicios</div>
+<div class="border-2 rounded-xl p-4 bg-zinc-50"><button onclick="pagarFinal()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm">Pagar plan - Activar bot</button><p class="text-[10px] text-zinc-500 mt-2 text-center">Pago por MercadoPago. Activación en 24hs.</p></div>
+</div>
+</section>
+
+<section id="afiliados" class="max-w-6xl mx-auto p-6 mt-10 border-t-2">
+<h2 class="font-black text-2xl">Ganá vendiendo Autoturnos</h2><p class="text-xs text-zinc-600 mt-2">Si ya sos cliente, podés ser afiliado. Te damos un link, si alguien compra con tu link ganás comisión.</p>
+<div class="grid md:grid-cols-3 gap-4 mt-6">
+<div class="border-2 rounded-[20px] p-5"><b class="text-xs">COMISIÓN</b><h3 class="font-black text-lg">20% del 1er mes</h3><p class="text-[11px] mt-2">Ej: Si vendés un PRO de $35k, te quedan $7.000. Cobro único por venta, no mensual.</p></div>
+<div class="border-2 rounded-[20px] p-5"><b class="text-xs">CÓMO FUNCIONA</b><p class="text-[11px] mt-2">1. Comprás un plan<br>2. Te damos tu link: autoturnos.com.ar?ref=tu-nombre<br>3. Compartís y cobrás por cada venta</p></div>
+<div class="border-[3px] border-black rounded-[20px] p-5 bg-yellow-50"><b class="text-xs">SOLICITAR SER AFILIADO</b><input placeholder="Tu email con el que compraste" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><input placeholder="Tu alias de MercadoPago" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><button onclick="alert('Solicitud enviada. Te verificamos que tengas plan activo y te activamos el link.')" class="w-full bg-black text-white py-2 rounded-xl font-black text-xs mt-3">Quiero mi link de afiliado</button></div>
+</div>
+<p class="text-[10px] text-zinc-400 mt-4 text-center">Sistema de referidos simple. No es inversión, solo comisión por venta de tu propio servicio.</p>
+</section>
+
 </body></html>
