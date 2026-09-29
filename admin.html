@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel Admin - Autoturnos</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-white text-black p-6">
+<script>
+const ADMIN_EMAIL="dariobrugo1@gmail.com";
+const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+if(!user || user.email.toLowerCase()!== ADMIN_EMAIL.toLowerCase()){
+  alert('Acceso solo admin'); window.location.href='login.html';
+}
+function salir(){ localStorage.removeItem('usuarioLogueado'); window.location.href='index.html'; }
+function cargarDatos(){
+  const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+  document.getElementById('totalUsuarios').textContent = usuarios.length;
+  let html='';
+  usuarios.forEach(u=>{ html+=`<div class="flex justify-between border-b py-2 text-[11px]"><span>${u.email}</span><span class="text-zinc-400">${new Date(u.fecha).toLocaleDateString()}</span></div>` });
+  document.getElementById('listaUsuarios').innerHTML = html || 'Aún no hay usuarios';
+}
+window.addEventListener('load', cargarDatos);
+</script>
+
+<div class="max-w-6xl mx-auto">
+<header class="flex justify-between items-center border-b pb-4"><h1 class="font-black text-2xl">PANEL ADMIN</h1><div class="flex gap-2"><a href="index.html" class="border-2 px-4 py-1 rounded-full text-[11px] font-black">VER WEB</a><button onclick="salir()" class="bg-black text-white px-4 py-1 rounded-full text-[11px] font-black">SALIR</button></div></header>
+
+<div class="grid md:grid-cols-3 gap-4 mt-6">
+<div class="border-[3px] border-black rounded-[20px] p-5"><b class="text-[10px]">USUARIOS REGISTRADOS</b><h2 id="totalUsuarios" class="font-black text-3xl">0</h2></div>
+<div class="border-2 rounded-[20px] p-5"><b class="text-[10px]">VENTAS HOY</b><h2 class="font-black text-3xl">$0</h2><p class="text-[10px] text-zinc-500">Cuando conectes MercadoPago se ve acá</p></div>
+<div class="border-2 rounded-[20px] p-5 bg-yellow-50"><b class="text-[10px]">AFILIADOS PENDIENTES</b><p class="text-[11px] mt-2">Por ahora se piden por el form de la web. Acá los aprobás vos a mano.</p></div>
+</div>
+
+<div class="mt-8 border-[3px] border-black rounded-[28px] p-6">
+<h2 class="font-black">Lista de usuarios</h2>
+<div id="listaUsuarios" class="mt-4"></div>
+</div>
+
+<div class="mt-6 border-2 rounded-[28px] p-6 bg-zinc-50">
+<h2 class="font-black text-sm">Que tenés que hacer ahora:</h2>
+<ul class="text-[11px] mt-3 list-disc ml-4 space-y-2">
+<li>Cuando alguien paga, vos le activás el bot a mano (por ahora)</li>
+<li>Para afiliados, vos le creas el link: `autoturnos.com.ar/?ref=nombre`</li>
+<li>Todo se guarda local. Para producción real necesitamos Firebase o Supabase</li>
+</ul>
+</div>
+</div>
+</body></html>
