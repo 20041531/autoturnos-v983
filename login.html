@@ -5,12 +5,12 @@
 <h1 class="font-black text-2xl text-center">Autoturnos</h1>
 <p class="text-[11px] text-zinc-500 text-center mt-1">Registrarse / Entrar</p>
 
-<input id="email" type="email" placeholder="Tu email" class="w-full border-2 rounded-xl px-4 py-3 text-sm mt-6">
-<input id="pass" type="password" placeholder="Contraseña" class="w-full border-2 rounded-xl px-4 py-3 text-sm mt-3">
+<input id="email" type="email" autocomplete="off" placeholder="Tu email" class="w-full border-2 rounded-xl px-4 py-3 text-sm mt-6">
+<input id="pass" type="password" autocomplete="new-password" placeholder="Crea una contraseña" class="w-full border-2 rounded-xl px-4 py-3 text-sm mt-3">
 
 <button onclick="registrarse()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm mt-4">ENTRAR / REGISTRARME</button>
 
-<p class="text-[9px] text-zinc-400 text-center mt-4">Si es tu primera vez te registra automático.<br>Solo dariobrugo1@gmail.com es admin</p>
+<p class="text-[10px] text-zinc-400 text-center mt-4">Si es tu primera vez te registra automático.</p>
 <p id="msg" class="text-[11px] text-center mt-3 font-bold"></p>
 
 <a href="index.html" class="block text-center text-[11px] mt-4 underline">Volver a la web</a>
@@ -18,22 +18,15 @@
 
 <script>
 const ADMIN_EMAIL = "dariobrugo1@gmail.com";
-
 function registrarse(){
   const email = document.getElementById('email').value.trim();
   const pass = document.getElementById('pass').value.trim();
   if(!email ||!pass){ document.getElementById('msg').textContent='Completa email y contraseña'; return; }
-
-  // Guarda usuario
   const usuario = { email: email, pass: pass, fecha: new Date().toISOString() };
   localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
-
-  // Guarda en lista de usuarios
   let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
   if(!usuarios.find(u=>u.email===email)){ usuarios.push(usuario); localStorage.setItem('usuarios', JSON.stringify(usuarios)); }
-
   document.getElementById('msg').textContent='¡Listo! Entrando...';
-
   if(email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
     setTimeout(()=> window.location.href='admin.html', 800);
   } else {
