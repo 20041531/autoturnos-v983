@@ -2,46 +2,63 @@
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>autoturnos.com.ar</title><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-white text-black">
 <script>
-const ADMIN_EMAIL="dariobrugo1@gmail.com"; const CLAVE_MAESTRA="edwardybella2026";
+const ADMIN_EMAIL="dariobrugo1@gmail.com";
+const CLAVE_MAESTRA="edwardybella2026";
 function getTotal(p,m){let b=p==='basico'?25000:p==='pro'?35000:45000; let t=b*m; if(m===12) t*=0.9; return t;}
 let planActual=null, mesesSel=1;
 function abrirPanel(plan,meses){planActual=plan; mesesSel=meses; document.getElementById('panelCalendario').classList.remove('hidden'); document.getElementById('tituloPanel').textContent=plan.toUpperCase()+' - '+meses+' meses - Total $'+getTotal(plan,meses).toLocaleString()+(meses===12?' -10% OFF':''); document.getElementById('configBasico').classList.add('hidden');document.getElementById('configPro').classList.add('hidden');document.getElementById('configPremium').classList.add('hidden'); if(plan==='basico')document.getElementById('configBasico').classList.remove('hidden'); if(plan==='pro')document.getElementById('configPro').classList.remove('hidden'); if(plan==='premium')document.getElementById('configPremium').classList.remove('hidden'); document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});}
 function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. Te contactamos para activar MercadoPago.');}
+
+// NUEVO: REGISTRO Y ADMIN UNICO
+function irLogin(){ window.location.href='login.html'; }
+function checkAdmin(){
+  const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
+    document.getElementById('btnAdmin').classList.remove('hidden');
+    document.getElementById('infoAdmin').textContent = 'Admin: '+user.email;
+  }
+}
+window.addEventListener('load', checkAdmin);
 </script>
 
-<header class="flex justify-between p-5 max-w-6xl mx-auto border-b sticky top-0 bg-white z-20"><b>autoturnos.com.ar</b><a href="#afiliados" class="text-[11px] border-2 border-black rounded-full px-3 py-1 font-black">AFILIADOS</a></header>
+<header class="flex justify-between items-center p-5 max-w-6xl mx-auto border-b sticky top-0 bg-white z-20">
+<b>autoturnos.com.ar</b>
+<div class="flex gap-2 items-center">
+<a href="#afiliados" class="text-[11px] border-2 border-black rounded-full px-3 py-1 font-black">AFILIADOS</a>
+<button onclick="irLogin()" class="text-[11px] bg-black text-white rounded-full px-4 py-1.5 font-black">REGISTRARSE / ENTRAR</button>
+<a id="btnAdmin" href="admin.html" class="hidden text-[11px] bg-red-600 text-white rounded-full px-4 py-1.5 font-black">PANEL ADMIN</a>
+</div>
+</header>
 
 <section class="max-w-6xl mx-auto p-6 text-center">
-<h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras</p>
+<p id="infoAdmin" class="text-[10px] text-red-600 font-bold mb-2"></p>
+<h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras - Solo vos sos admin dariobrugo1@gmail.com</p>
 <div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
 
-<!-- BÁSICO NUEVO -->
 <div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO - $25k / $25 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
 <li>Bot de WhatsApp</li>
-<li>1 horario fijo a elección (el que quiera el cliente)</li>
-<li>1 idioma a elección: ES o EN</li>
+<li>1 horario fijo a elección</li>
+<li>1 idioma: ES o EN</li>
 <li>Tachar sábados y domingos</li>
 <li>Horario de apertura y cierre</li>
-<li>1000 conversaciones gratis, luego se compran</li>
+<li>1000 conversaciones gratis</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('basico',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('basico',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('basico',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
-<!-- PRO NUEVO -->
 <div class="border-[3px] border-black rounded-[28px] p-6 bg-zinc-50 relative"><div class="absolute -top-3 left-6 bg-black text-white text-[10px] px-3 py-1 rounded-full">MÁS ELEGIDO</div><b class="text-xs">PRO - $35k / $35 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
 <li>Bot de WhatsApp</li>
-<li>1 idioma a elección: ES o EN</li>
-<li>Pregunta qué se hará y cambia la duración (ej: corte 30m, teñido 20m)</li>
+<li>1 idioma: ES o EN</li>
+<li>Pregunta qué se hará y cambia la duración</li>
 <li>Tachar cualquier día</li>
 <li>Horario de apertura y cierre</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('pro',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('pro',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('pro',12)" class="bg-black text-white rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
-<!-- PREMIUM NUEVO -->
 <div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">PREMIUM - $45k / $45 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
 <li>Bot de WhatsApp</li>
-<li>2 idiomas activados: ES + EN</li>
-<li>Duración según servicio (ej: corte 30m, teñido 20m)</li>
+<li>2 idiomas: ES + EN</li>
+<li>Duración según servicio</li>
 <li>Tachar cualquier día</li>
 <li>Horario de apertura y cierre</li>
-<li>Varias personas por mismo horario (ej: 3 por hora)</li>
+<li>Varias personas por mismo horario</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('premium',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('premium',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('premium',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
 </div>
@@ -50,22 +67,22 @@ function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. T
 <section id="panelCalendario" class="hidden max-w-6xl mx-auto p-6 border-[3px] border-black rounded-[28px] mb-10">
 <h2 id="tituloPanel" class="font-black text-xl"></h2>
 <div class="grid md:grid-cols-2 gap-6 mt-4">
-<div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Bot WhatsApp + 1 horario fijo a elección + 1 idioma + sáb/dom + apertura/cierre + 1000 conv gratis</div>
-<div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Bot + 1 idioma + duración variable según servicio + tachar cualquier día + apertura/cierre</div>
-<div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> Bot + 2 idiomas + duración por servicio + tachar cualquier día + apertura/cierre + cupos múltiples x hora</div>
+<div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Bot WhatsApp + 1 horario fijo + 1 idioma + sáb/dom + apertura/cierre + 1000 conv</div>
+<div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Bot + 1 idioma + duración variable + tachar cualquier día + apertura/cierre</div>
+<div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> Bot + 2 idiomas + duración por servicio + tachar cualquier día + apertura/cierre + cupos múltiples</div>
 <div class="border-2 rounded-xl p-4 bg-zinc-50"><button onclick="pagarFinal()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm">Pagar plan - Activar bot</button><p class="text-[10px] text-zinc-500 mt-2 text-center">Pago por MercadoPago. Activación en 24hs.</p></div>
 </div>
 </section>
 
 <section id="afiliados" class="max-w-6xl mx-auto p-6 mt-10 border-t-2">
-<h2 class="font-black text-2xl">Ganá vendiendo Autoturnos</h2><p class="text-xs text-zinc-600 mt-2">Si ya sos cliente, podés ser afiliado. Te damos un link, si alguien compra con tu link ganás comisión.</p>
+<h2 class="font-black text-2xl">Ganá vendiendo Autoturnos</h2><p class="text-xs text-zinc-600 mt-2">Si ya sos cliente, podés ser afiliado.</p>
 <div class="grid md:grid-cols-3 gap-4 mt-6">
-<div class="border-2 rounded-[20px] p-5"><b class="text-xs">COMISIÓN</b><h3 class="font-black text-lg">20% del 1er mes</h3><p class="text-[11px] mt-2">Ej: Si vendés un PRO de $35k, te quedan $7.000. Cobro único por venta, no mensual.</p></div>
-<div class="border-2 rounded-[20px] p-5"><b class="text-xs">CÓMO FUNCIONA</b><p class="text-[11px] mt-2">1. Comprás un plan<br>2. Te damos tu link: autoturnos.com.ar?ref=tu-nombre<br>3. Compartís y cobrás por cada venta</p></div>
-<div class="border-[3px] border-black rounded-[20px] p-5 bg-yellow-50"><b class="text-xs">SOLICITAR SER AFILIADO</b><input placeholder="Tu email con el que compraste" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><input placeholder="Tu alias de MercadoPago" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><button onclick="alert('Solicitud enviada. Te verificamos que tengas plan activo y te activamos el link.')" class="w-full bg-black text-white py-2 rounded-xl font-black text-xs mt-3">Quiero mi link de afiliado</button></div>
+<div class="border-2 rounded-[20px] p-5"><b class="text-xs">COMISIÓN</b><h3 class="font-black text-lg">20% del 1er mes</h3><p class="text-[11px] mt-2">Ej: PRO $35k te quedan $7.000</p></div>
+<div class="border-2 rounded-[20px] p-5"><b class="text-xs">CÓMO FUNCIONA</b><p class="text-[11px] mt-2">1. Comprás un plan<br>2. Link:?ref=tu-nombre<br>3. Cobrás por venta</p></div>
+<div class="border-[3px] border-black rounded-[20px] p-5 bg-yellow-50"><b class="text-xs">SOLICITAR SER AFILIADO</b><input placeholder="Tu email con el que compraste" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><input placeholder="Tu alias de MercadoPago" class="w-full border-2 rounded-xl px-3 py-2 text-xs mt-2"><button onclick="alert('Solicitud enviada')" class="w-full bg-black text-white py-2 rounded-xl font-black text-xs mt-3">Quiero mi link de afiliado</button></div>
 </div>
-<p class="text-[10px] text-zinc-400 mt-4 text-center">Sistema de referidos simple. No es inversión, solo comisión por venta de tu propio servicio.</p>
 </section>
 
+<div class="max-w-6xl mx-auto px-6 text-center mt-6 mb-10"><a href="conversaciones.html" class="inline-block bg-black text-white px-8 py-3 rounded-xl font-black text-xs">Comprar conversaciones extra - Solo USD</a><p class="text-[9px] text-zinc-400 mt-2">$12 / $20 / $35 USD - Sin comisión afiliados</p></div>
+
 </body></html>
-<div class="max-w-6xl mx-auto px-6 text-center mt-6"><a href="conversaciones.html" class="inline-block bg-black text-white px-8 py-3 rounded-xl font-black text-xs">Comprar conversaciones extra - Solo USD</a><p class="text-[9px] text-zinc-400 mt-2">$12 / $20 / $35 USD - Sin comisión afiliados - $5 ganancia</p></div>
