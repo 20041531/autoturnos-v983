@@ -8,14 +8,11 @@ function getTotal(p,m){let b=p==='basico'?25000:p==='pro'?35000:45000; let t=b*m
 let planActual=null, mesesSel=1;
 function abrirPanel(plan,meses){planActual=plan; mesesSel=meses; document.getElementById('panelCalendario').classList.remove('hidden'); document.getElementById('tituloPanel').textContent=plan.toUpperCase()+' - '+meses+' meses - Total $'+getTotal(plan,meses).toLocaleString()+(meses===12?' -10% OFF':''); document.getElementById('configBasico').classList.add('hidden');document.getElementById('configPro').classList.add('hidden');document.getElementById('configPremium').classList.add('hidden'); if(plan==='basico')document.getElementById('configBasico').classList.remove('hidden'); if(plan==='pro')document.getElementById('configPro').classList.remove('hidden'); if(plan==='premium')document.getElementById('configPremium').classList.remove('hidden'); document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});}
 function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. Te contactamos para activar MercadoPago.');}
-
-// NUEVO: REGISTRO Y ADMIN UNICO
 function irLogin(){ window.location.href='login.html'; }
 function checkAdmin(){
   const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
   if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
     document.getElementById('btnAdmin').classList.remove('hidden');
-    document.getElementById('infoAdmin').textContent = 'Admin: '+user.email;
   }
 }
 window.addEventListener('load', checkAdmin);
@@ -31,8 +28,7 @@ window.addEventListener('load', checkAdmin);
 </header>
 
 <section class="max-w-6xl mx-auto p-6 text-center">
-<p id="infoAdmin" class="text-[10px] text-red-600 font-bold mb-2"></p>
-<h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras - Solo vos sos admin dariobrugo1@gmail.com</p>
+<h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras</p>
 <div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
 
 <div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO - $25k / $25 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
