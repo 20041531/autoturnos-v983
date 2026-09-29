@@ -14,18 +14,45 @@ function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. T
 <section class="max-w-6xl mx-auto p-6 text-center">
 <h1 class="font-black text-4xl">Tu bot de turnos 24/7</h1><p class="text-xs text-zinc-500 mt-2">1 día gratis con tarjeta - Cancela cuando quieras</p>
 <div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
-<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO</b><h3 class="font-black text-xl">$25k / $25 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>1 idioma ES O EN</li><li>Tiempo fijo 30m</li><li>Tacha Sáb y Dom</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('basico',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('basico',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('basico',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
-<div class="border-[3px] border-black rounded-[28px] p-6 bg-zinc-50 relative"><div class="absolute -top-3 left-6 bg-black text-white text-[10px] px-3 py-1 rounded-full">MÁS ELEGIDO</div><b class="text-xs">PRO</b><h3 class="font-black text-xl">$35k / $35 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>1 idioma ES O EN</li><li>Pregunta servicio y suma tiempo</li><li>Tacha cualquier día</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('pro',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('pro',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('pro',12)" class="bg-black text-white rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
-<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">PREMIUM</b><h3 class="font-black text-xl">$45k / $45 USD</h3><ul class="text-[11px] mt-3 list-disc ml-4"><li>2 idiomas ES+EN auto</li><li>Servicios variables</li><li>Turnos grupales 3 cupos x hora</li></ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('premium',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('premium',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('premium',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+
+<!-- BÁSICO NUEVO -->
+<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO - $25k / $25 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
+<li>Bot de WhatsApp</li>
+<li>1 horario fijo a elección (el que quiera el cliente)</li>
+<li>1 idioma a elección: ES o EN</li>
+<li>Tachar sábados y domingos</li>
+<li>Horario de apertura y cierre</li>
+<li>1000 conversaciones gratis, luego se compran</li>
+</ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('basico',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('basico',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('basico',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+
+<!-- PRO NUEVO -->
+<div class="border-[3px] border-black rounded-[28px] p-6 bg-zinc-50 relative"><div class="absolute -top-3 left-6 bg-black text-white text-[10px] px-3 py-1 rounded-full">MÁS ELEGIDO</div><b class="text-xs">PRO - $35k / $35 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
+<li>Bot de WhatsApp</li>
+<li>1 idioma a elección: ES o EN</li>
+<li>Pregunta qué se hará y cambia la duración (ej: corte 30m, teñido 20m)</li>
+<li>Tachar cualquier día</li>
+<li>Horario de apertura y cierre</li>
+</ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('pro',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('pro',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('pro',12)" class="bg-black text-white rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+
+<!-- PREMIUM NUEVO -->
+<div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">PREMIUM - $45k / $45 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
+<li>Bot de WhatsApp</li>
+<li>2 idiomas activados: ES + EN</li>
+<li>Duración según servicio (ej: corte 30m, teñido 20m)</li>
+<li>Tachar cualquier día</li>
+<li>Horario de apertura y cierre</li>
+<li>Varias personas por mismo horario (ej: 3 por hora)</li>
+</ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('premium',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('premium',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('premium',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
+
 </div>
 </section>
 
 <section id="panelCalendario" class="hidden max-w-6xl mx-auto p-6 border-[3px] border-black rounded-[28px] mb-10">
 <h2 id="tituloPanel" class="font-black text-xl"></h2>
 <div class="grid md:grid-cols-2 gap-6 mt-4">
-<div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Idioma, horario 09-18, tiempo fijo</div>
-<div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Servicios ej: corte 30, teñido 20 + días a tachar</div>
-<div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> ES+EN + grupal + servicios</div>
+<div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Bot WhatsApp + 1 horario fijo a elección + 1 idioma + sáb/dom + apertura/cierre + 1000 conv gratis</div>
+<div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Bot + 1 idioma + duración variable según servicio + tachar cualquier día + apertura/cierre</div>
+<div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> Bot + 2 idiomas + duración por servicio + tachar cualquier día + apertura/cierre + cupos múltiples x hora</div>
 <div class="border-2 rounded-xl p-4 bg-zinc-50"><button onclick="pagarFinal()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm">Pagar plan - Activar bot</button><p class="text-[10px] text-zinc-500 mt-2 text-center">Pago por MercadoPago. Activación en 24hs.</p></div>
 </div>
 </section>
