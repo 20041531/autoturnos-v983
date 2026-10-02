@@ -1,42 +1,185 @@
-// api/bot.js - HACERLO AUTOMATICO
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi Panel - autoturnos.com.ar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-black p-4">
 
-export default async function handler(req, res) {
-  const numeroCliente = req.body.numero; // o como lo tengas vos
-  const cliente = await buscarEnTuDB(numeroCliente); // tu función actual
+<script>
+// CONFIG
+const ADMIN_EMAIL = "dariobrugo1@gmail.com";
 
-  let plan = (cliente.plan || 'basico').toLowerCase(); // basico, pro, premium
-
-  // --- LOGICA AUTOMATICA POR PLAN ---
-
-  // 1. BASICO - 1 horario fijo
-  let mensaje = "";
-  if (plan === 'basico') {
-    mensaje = `Hola! Tenemos turno a las ${cliente.horario_fijo} ¿Te sirve? Responde SI/NO`;
-    // no preguntes qué se va a hacer, no preguntes idioma
-  }
-
-  // 2. PRO - pregunta qué se hará y cambia duración + puede tachar cualquier día
-  if (plan === 'pro' || plan === 'premium') {
-    // esto es automatico
-    mensaje = `Hola! ¿Qué te vas a hacer?\n1- Corte (30min)\n2- Color (2hs)\n3- Peinado (1h)\nResponde el número`;
-    
-    // y para tachar días, usás cliente.dias_bloqueados que el cliente configuró en dashboard
-    // if (cliente.dias_bloqueados.includes(fecha)) { no dar turno }
-  }
-
-  // 3. PREMIUM - 2 idiomas + varios por horario
-  if (plan === 'premium') {
-    // detecta idioma automatico
-    let idioma = cliente.idioma_default || 'es'; // o detectar por mensaje del usuario
-    if (idioma === 'en') {
-      mensaje = `Hi! How many people? We have ${cliente.cupos_por_horario} spots per time`;
+function getPlanActual(planReal){
+  try{
+    const u = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+    const test = localStorage.getItem('test_plan_override');
+    if(u && u.email && u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase() && test && ['basico','pro','premium'].includes(test)){
+      return test;
     }
-    
-    // cupos multiples automatico
-    let cupos = cliente.cupos_por_horario || 1; // viene del dashboard
-    // if (turnosTomadosEnEsaHora < cupos) { dar turno } else { buscar otra hora }
-  }
-
-  // mandas mensaje por WhatsApp...
-  res.json({ reply: mensaje });
+  }catch(e){}
+  return planReal;
 }
+
+const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+if(!user){ window.location.href='login.html'; }
+
+// AHORA: si no tiene plan es sin_plan
+let planReal = (user.plan || 'sin_plan').toLowerCase();
+let esAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+// Si no tiene plan y NO es admin, lo mandamos a comprar
+if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
+  // No lo redirijo al toque, dejo que cargue el HTML y muestro bloqueo total
+}
+
+let plan = getPlanActual(planReal);
+
+// Si no sos admin, borra cualquier prueba
+if(!esAdmin){
+  localStorage.removeItem('test_plan_override');
+  plan = planReal;
+}
+
+function salir(){ localStorage.removeItem('usuarioLogueado'); window.location.href='index.html'; }
+function guardar(){
+  localStorage.setItem('configBot', JSON.stringify({
+    apertura: document.getElementById('apertura').value,
+    cierre: document.getElementById('cierre').value
+  }));
+  alert('¡Guardado! Tu bot está activo con plan: '+plan.toUpperCase());
+}
+</script>
+
+<header class="flex justify-between items-center max-w-5xl mx-auto border-b pb-4">
+<b class="font-black tracking-tight">autoturnos.com.ar</b>
+<div class="flex gap-2 items-center">
+<span id="planBadge" class="bg-black text-white text-[10px] px-3 py-1 rounded-full font-black"></span>
+<a href="admin.html" id="btnAdmin" style="display:none" class="text-[10px] border-2 px-3 py-1 rounded-full font-black">ADMIN</a>
+<a href="index.html" class="text-[10px] border-2 px-3 py-1 rounded-full font-black">WEB</a>
+<button onclick="salir()" class="text-[10px] bg-black text-white px-4 py-1.5 rounded-full font-black">SALIR</button>
+</div>
+</header>
+
+<!-- BLOQUEO SI NO PAGO -->
+<div id="bloqueoPago" style="display:none" class="max-w-5xl mx-auto mt-20 text-center border-[4px] border-black rounded-[32px] p-10">
+<h1 class="font-black text-[32px] leading-none">Tenés que comprar un plan para usar el bot</h1>
+<p class="text-[13px] text-zinc-500 mt-3">Te registraste pero aún no tenés ningún plan activo.</p>
+<div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
+<div class="border-2 rounded-[20px] p-4"><b class="text-[12px]">BÁSICO $15k</b><p class="text-[11px] text-zinc-500 mt-1">Bot 24/7 + agenda</p></div>
+<div class="border-2 border-black bg-black text-white rounded-[20px] p-4"><b class="text-[12px]">PRO $25k</b><p class="text-[11px] text-zinc-300 mt-1">Duración variable por servicio</p></div>
+<div class="border-2 rounded-[20px] p-4 bg-yellow-50"><b class="text-[12px]">PREMIUM $40k</b><p class="text-[11px] text-zinc-500 mt-1">Todo + sucursales + idiomas</p></div>
+</div>
+<a href="index.html#planes" class="inline-block mt-8 bg-black text-white px-10 py-4 rounded-full font-black text-[14px]">VER PLANES Y PAGAR</a>
+<p id="debugPlan" class="text-[10px] text-zinc-400 mt-4"></p>
+</div>
+
+<!-- CONTENIDO NORMAL DEL DASHBOARD -->
+<div id="contenidoDash" class="max-w-5xl mx-auto mt-8">
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-black text-[28px] leading-none">Mi bot <span id="planText" class="text-zinc-400"></span></h1>
+<p class="text-[11px] text-zinc-500 mt-1">Configurá tu bot de WhatsApp. Los cambios son automáticos.</p>
+</div>
+<div class="text-right"><p class="text-[9px] text-zinc-400">PLAN REAL</p><p id="planRealTxt" class="font-black text-[11px]"></p></div>
+</div>
+
+<div class="grid md:grid-cols-3 gap-4 mt-6">
+<div class="border-[3px] border-black rounded-[28px] p-5 bg-white">
+<div class="flex justify-between"><b class="text-[11px]">BÁSICO</b><span class="bg-black text-white text-[8px] px-2 py-0.5 rounded-full">INCLUIDO</span></div>
+<div class="mt-4 space-y-3 text-[12px]">
+<div class="flex justify-between items-center">Apertura: <input id="apertura" type="time" value="09:00" class="border-2 rounded-xl px-3 py-1 ml-2 text-xs"></div>
+<div class="flex justify-between items-center">Cierre: <input id="cierre" type="time" value="18:00" class="border-2 rounded-xl px-3 py-1 ml-2 text-xs"></div>
+<div class="flex justify-between items-center">Turno: <input value="30 min" class="border-2 rounded-xl px-3 py-1 w-24 ml-2 text-xs"></div>
+<div class="pt-2 space-y-1 text-[11px] text-zinc-600">
+<label class="flex gap-2"><input type="checkbox"> Tachar sábados</label>
+<label class="flex gap-2"><input type="checkbox"> Tachar domingos</label>
+</div>
+</div>
+</div>
+
+<div id="card-pro" class="border-2 border-zinc-200 rounded-[28px] p-5 opacity-30 pointer-events-none relative bg-white">
+<div id="lock-pro" class="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-[28px] text-center">
+<span class="bg-black text-white text-[10px] px-4 py-1.5 rounded-full font-black">🔒 SOLO PRO / PREMIUM</span>
+<a href="index.html#planes" class="mt-2 text-[10px] underline font-bold">Mejorar mi plan</a>
+</div>
+<b class="text-[11px]">PRO - Duración variable</b>
+<div class="mt-4 space-y-2 text-[11px]">
+<p class="text-zinc-500">El bot pregunta qué servicio quiere:</p>
+<select class="w-full border-2 rounded-xl px-3 py-2 text-xs"><option>Corte - 30min</option><option>Color - 120min</option><option>Peinado - 60min</option></select>
+<p class="mt-3">Tachar cualquier día:</p>
+<div class="grid grid-cols-4 gap-1 text-[10px]"><label><input type="checkbox"> Lun</label><label><input type="checkbox"> Mar</label><label><input type="checkbox"> Mie</label><label><input type="checkbox"> Jue</label></div>
+</div>
+</div>
+
+<div id="card-premium" class="border-2 border-zinc-200 rounded-[28px] p-5 opacity-30 pointer-events-none relative bg-[#FFFBEB]">
+<div id="lock-premium" class="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-[28px] text-center">
+<span class="bg-yellow-400 text-black text-[10px] px-4 py-1.5 rounded-full font-black">🔒 SOLO PREMIUM</span>
+<a href="index.html#planes" class="mt-2 text-[10px] underline font-bold">Mejorar a Premium</a>
+</div>
+<b class="text-[11px]">PREMIUM - Todo incluido</b>
+<div class="mt-4 space-y-2 text-[11px]">
+<p>Idiomas del bot:</p>
+<div class="flex gap-3"><label class="flex gap-1"><input type="checkbox" checked> ES</label><label class="flex gap-1"><input type="checkbox" checked> EN</label></div>
+<p class="mt-3">Cupos por mismo horario:</p>
+<input type="number" value="3" class="w-full border-2 rounded-xl px-3 py-2 text-xs">
+<p class="text-[9px] text-zinc-500">Ej: 3 clientes a las 10:00</p>
+<p class="mt-2">Sucursales / Staff:</p>
+<input placeholder="Ej: Juan, Pedro" class="w-full border-2 rounded-xl px-3 py-2 text-xs">
+</div>
+</div>
+</div>
+
+<button onclick="guardar()" class="w-full mt-8 bg-black text-white py-4 rounded-[20px] font-black text-[14px] tracking-wide">Guardar y activar bot de WhatsApp</button>
+<p class="text-[10px] text-zinc-400 text-center mt-3">Tu bot funciona en api/bot.js - 100% automático</p>
+</div>
+
+<script>
+// Pinta badges
+document.getElementById('planText').textContent = '- '+plan.toUpperCase();
+document.getElementById('planBadge').textContent = plan.toUpperCase();
+document.getElementById('planRealTxt').textContent = planReal.toUpperCase();
+try{ if(esAdmin) document.getElementById('btnAdmin').style.display='inline-block'; }catch(e){}
+
+// LOGICA DE BLOQUEO TOTAL
+if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
+  document.getElementById('contenidoDash').style.display='none';
+  document.getElementById('bloqueoPago').style.display='block';
+  document.getElementById('planBadge').textContent = 'SIN PLAN';
+  document.getElementById('planBadge').style.background = 'red';
+  document.getElementById('debugPlan').textContent = 'Tu email: '+user.email+' | plan actual: '+planReal;
+} else {
+  // Desbloquea según plan
+  if(plan==='pro' || plan==='premium'){
+    const c=document.getElementById('card-pro');
+    c.classList.remove('opacity-30','pointer-events-none','border-zinc-200');
+    c.classList.add('border-black','bg-zinc-50');
+    document.getElementById('lock-pro').style.display='none';
+  }
+  if(plan==='premium'){
+    const c=document.getElementById('card-premium');
+    c.classList.remove('opacity-30','pointer-events-none','border-zinc-200');
+    c.classList.add('border-black');
+    c.style.opacity='1';
+    document.getElementById('lock-premium').style.display='none';
+  }
+}
+
+// Banner solo para vos
+(function(){
+  try{
+    const test=localStorage.getItem('test_plan_override');
+    const u=JSON.parse(localStorage.getItem('usuarioLogueado')||'null');
+    if(test && u && u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+      const b=document.createElement('div');
+      b.style="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000;color:#00ff88;padding:10px 16px;border-radius:99px;font-size:11px;font-weight:900;z-index:9999;border:2px solid #00ff88;display:flex;gap:8px;align-items:center";
+      b.innerHTML=`<span>🔧 VIENDO COMO ${test.toUpperCase()} (REAL: ${planReal.toUpperCase()})</span><a href="admin.html" style="background:white;color:black;padding:4px 10px;border-radius:99px;text-decoration:none;margin-left:8px">ADMIN</a><span onclick="localStorage.removeItem('test_plan_override');location.reload()" style="background:#00ff88;color:black;padding:4px 10px;border-radius:99px;cursor:pointer;margin-left:4px">X REAL</span>`;
+      document.body.appendChild(b);
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
