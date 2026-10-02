@@ -18,19 +18,43 @@
 
 <script>
 const ADMIN_EMAIL = "dariobrugo1@gmail.com";
+
 function registrarse(){
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
   const pass = document.getElementById('pass').value.trim();
   if(!email ||!pass){ document.getElementById('msg').textContent='Completa email y contraseña'; return; }
-  const usuario = { email: email, pass: pass, fecha: new Date().toISOString() };
-  localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
+
   let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-  if(!usuarios.find(u=>u.email===email)){ usuarios.push(usuario); localStorage.setItem('usuarios', JSON.stringify(usuarios)); }
+  let usuarioExistente = usuarios.find(u=>u.email.toLowerCase()===email);
+
+  let usuario;
+  if(usuarioExistente){
+    // Si ya existe, NO le borro el plan que pagó
+    usuario = usuarioExistente;
+  } else {
+    // Si es nuevo, entra SIN PLAN - tiene que pagar
+    usuario = {
+      email: email,
+      pass: pass,
+      plan: 'sin_plan',
+      fecha: new Date().toISOString()
+    };
+    usuarios.push(usuario);
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+  }
+
+  localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
   document.getElementById('msg').textContent='¡Listo! Entrando...';
-  if(email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
+
+  if(email === ADMIN_EMAIL.toLowerCase()){
     setTimeout(()=> window.location.href='admin.html', 800);
   } else {
-    setTimeout(()=> window.location.href='index.html', 800);
+    // Si no tiene plan, lo mando a ver los planes para comprar
+    if(!usuario.plan || usuario.plan === 'sin_plan'){
+      setTimeout(()=> window.location.href='index.html#planes', 800);
+    } else {
+      setTimeout(()=> window.location.href='dashboard.html', 800);
+    }
   }
 }
 </script>
