@@ -9,6 +9,26 @@
 <body class="bg-white text-black p-4">
 
 <script>
+// === AUTO-ACTIVACION POR PAGO ===
+(function(){
+  try{
+    const p = new URLSearchParams(window.location.search);
+    const planParam = p.get('plan');
+    const pagado = p.get('pagado');
+    if(planParam && pagado==='1' && ['basico','pro','premium'].includes(planParam.toLowerCase())){
+      let u = JSON.parse(localStorage.getItem('usuarioLogueado')||'null');
+      if(u){
+        u.plan = planParam.toLowerCase();
+        localStorage.setItem('usuarioLogueado', JSON.stringify(u));
+        let lista = JSON.parse(localStorage.getItem('usuarios')||'[]');
+        let idx = lista.findIndex(x=>x.email && x.email.toLowerCase()===u.email.toLowerCase());
+        if(idx!==-1){ lista[idx].plan = planParam.toLowerCase(); localStorage.setItem('usuarios', JSON.stringify(lista)); }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }catch(e){}
+})();
+
 // CONFIG
 const ADMIN_EMAIL = "dariobrugo1@gmail.com";
 
@@ -26,18 +46,10 @@ function getPlanActual(planReal){
 const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
 if(!user){ window.location.href='login.html'; }
 
-// AHORA: si no tiene plan es sin_plan
 let planReal = (user.plan || 'sin_plan').toLowerCase();
 let esAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-
-// Si no tiene plan y NO es admin, lo mandamos a comprar
-if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
-  // No lo redirijo al toque, dejo que cargue el HTML y muestro bloqueo total
-}
-
 let plan = getPlanActual(planReal);
 
-// Si no sos admin, borra cualquier prueba
 if(!esAdmin){
   localStorage.removeItem('test_plan_override');
   plan = planReal;
@@ -63,20 +75,19 @@ function guardar(){
 </div>
 </header>
 
-<!-- BLOQUEO SI NO PAGO -->
+<!-- BLOQUEO SI NO PAGO - PRECIOS CORREGIDOS -->
 <div id="bloqueoPago" style="display:none" class="max-w-5xl mx-auto mt-20 text-center border-[4px] border-black rounded-[32px] p-10">
 <h1 class="font-black text-[32px] leading-none">Tenés que comprar un plan para usar el bot</h1>
 <p class="text-[13px] text-zinc-500 mt-3">Te registraste pero aún no tenés ningún plan activo.</p>
 <div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
-<div class="border-2 rounded-[20px] p-4"><b class="text-[12px]">BÁSICO $15k</b><p class="text-[11px] text-zinc-500 mt-1">Bot 24/7 + agenda</p></div>
-<div class="border-2 border-black bg-black text-white rounded-[20px] p-4"><b class="text-[12px]">PRO $25k</b><p class="text-[11px] text-zinc-300 mt-1">Duración variable por servicio</p></div>
-<div class="border-2 rounded-[20px] p-4 bg-yellow-50"><b class="text-[12px]">PREMIUM $40k</b><p class="text-[11px] text-zinc-500 mt-1">Todo + sucursales + idiomas</p></div>
+<div class="border-2 rounded-[20px] p-4"><b class="text-[12px]">BÁSICO $25.000 ARS / $25 USD</b><p class="text-[11px] text-zinc-500 mt-1">Bot 24/7 + agenda</p></div>
+<div class="border-2 border-black bg-black text-white rounded-[20px] p-4"><b class="text-[12px]">PRO $35.000 ARS / $35 USD</b><p class="text-[11px] text-zinc-300 mt-1">Duración variable por servicio</p></div>
+<div class="border-2 rounded-[20px] p-4 bg-yellow-50"><b class="text-[12px]">PREMIUM $45.000 ARS / $45 USD</b><p class="text-[11px] text-zinc-500 mt-1">Todo + sucursales + idiomas</p></div>
 </div>
 <a href="index.html#planes" class="inline-block mt-8 bg-black text-white px-10 py-4 rounded-full font-black text-[14px]">VER PLANES Y PAGAR</a>
 <p id="debugPlan" class="text-[10px] text-zinc-400 mt-4"></p>
 </div>
 
-<!-- CONTENIDO NORMAL DEL DASHBOARD -->
 <div id="contenidoDash" class="max-w-5xl mx-auto mt-8">
 <div class="flex justify-between items-end">
 <div>
@@ -137,13 +148,11 @@ function guardar(){
 </div>
 
 <script>
-// Pinta badges
 document.getElementById('planText').textContent = '- '+plan.toUpperCase();
 document.getElementById('planBadge').textContent = plan.toUpperCase();
 document.getElementById('planRealTxt').textContent = planReal.toUpperCase();
 try{ if(esAdmin) document.getElementById('btnAdmin').style.display='inline-block'; }catch(e){}
 
-// LOGICA DE BLOQUEO TOTAL
 if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
   document.getElementById('contenidoDash').style.display='none';
   document.getElementById('bloqueoPago').style.display='block';
@@ -151,7 +160,6 @@ if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
   document.getElementById('planBadge').style.background = 'red';
   document.getElementById('debugPlan').textContent = 'Tu email: '+user.email+' | plan actual: '+planReal;
 } else {
-  // Desbloquea según plan
   if(plan==='pro' || plan==='premium'){
     const c=document.getElementById('card-pro');
     c.classList.remove('opacity-30','pointer-events-none','border-zinc-200');
@@ -167,7 +175,6 @@ if(!['basico','pro','premium'].includes(planReal) &&!esAdmin){
   }
 }
 
-// Banner solo para vos
 (function(){
   try{
     const test=localStorage.getItem('test_plan_override');
