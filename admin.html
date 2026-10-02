@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel Admin - Autoturnos</title><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-white text-black p-6">
-<!-- TEST DE PLANES - SOLO VOS - INICIO -->
+<!-- TEST DE PLANES - SOLO VOS -->
 <div id="admin-plan-tester" style="display:none; position:fixed; top:0; left:0; width:100%; background:#000; color:white; padding:12px; z-index:9999; text-align:center; border-bottom:3px solid #00ff88;">
   <span style="margin-right:10px; font-weight:900; font-size:12px;">🔧 MODO PRUEBA ADMIN:</span>
   <button onclick="setTestPlan('basico')" class="bg-white text-black px-3 py-1 rounded-full text-[11px] font-black m-1">VER BÁSICO</button>
@@ -11,7 +11,6 @@
   <span id="current-test-plan" style="margin-left:10px; font-size:11px; opacity:0.8;"></span>
 </div>
 <div id="spacer-tester" style="display:none; height:60px;"></div>
-<!-- TEST DE PLANES - SOLO VOS - FIN -->
 
 <script>
 const ADMIN_EMAIL="dariobrugo1@gmail.com";
@@ -27,17 +26,16 @@ function cargarDatos(){
   let html='';
   usuarios.forEach(u=>{
     const plan = u.plan || 'basico';
-    html+=`<div class="flex justify-between items-center border-b py-2 text-[11px]"><span>${u.email} <b class="ml-2 px-2 py-0.5 rounded-full bg-black text-white text-[9px]">${plan.toUpperCase()}</b></span><span class="text-zinc-400">${new Date(u.fecha).toLocaleDateString()}</span></div>`
+    const fecha = u.fecha? new Date(u.fecha).toLocaleDateString() : '-';
+    html+=`<div class="flex justify-between items-center border-b py-2 text-[11px]"><span>${u.email} <b class="ml-2 px-2 py-0.5 rounded-full bg-black text-white text-[9px]">${plan.toUpperCase()}</b></span><span class="text-zinc-400">${fecha}</span></div>`
   });
-  document.getElementById('listaUsuarios').innerHTML = html || 'Aún no hay usuarios';
+  document.getElementById('listaUsuarios').innerHTML = html || '<span class="text-[11px] text-zinc-500">Aún no hay usuarios</span>';
 
-  // Mostrar barra de testeo solo si es admin
-  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
-    document.getElementById('admin-plan-tester').style.display = 'block';
-    document.getElementById('spacer-tester').style.display = 'block';
-    const test = localStorage.getItem('test_plan_override');
-    document.getElementById('current-test-plan').innerText = test? `Estás viendo como: ${test.toUpperCase()}` : 'Viendo plan REAL';
-  }
+  document.getElementById('admin-plan-tester').style.display = 'block';
+  document.getElementById('spacer-tester').style.display = 'block';
+  const test = localStorage.getItem('test_plan_override');
+  document.getElementById('current-test-plan').innerText = test? `Estás viendo como: ${test.toUpperCase()}` : 'Viendo plan REAL';
+  document.getElementById('modoActual').innerText = test? `MODO PRUEBA: ${test.toUpperCase()}` : 'MODO REAL';
 }
 
 function setTestPlan(plan){
@@ -46,17 +44,16 @@ function setTestPlan(plan){
   } else {
     localStorage.setItem('test_plan_override', plan);
   }
-  alert(plan === 'real'? 'Volviste a tu plan real' : `Ahora estás probando como si fueras ${plan.toUpperCase()}. Andá a index.html para probar.`);
+  alert(plan === 'real'? 'Volviste a tu plan REAL' : `Ahora estás probando como ${plan.toUpperCase()}. Andá a VER WEB.`);
   location.reload();
 }
 
-// Esta funcion usala en toda tu web para saber el plan
 function getPlanActual(planReal){
   const test = localStorage.getItem('test_plan_override');
   if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && test){
-    return test; // Si sos admin y estas testeando, devuelve el de prueba
+    return test;
   }
-  return planReal; // Si no, el real
+  return planReal;
 }
 
 window.addEventListener('load', cargarDatos);
@@ -66,7 +63,7 @@ window.addEventListener('load', cargarDatos);
 <header class="flex justify-between items-center border-b pb-4"><h1 class="font-black text-2xl">PANEL ADMIN</h1><div class="flex gap-2"><a href="index.html" class="border-2 px-4 py-1 rounded-full text-[11px] font-black">VER WEB</a><button onclick="salir()" class="bg-black text-white px-4 py-1 rounded-full text-[11px] font-black">SALIR</button></div></header>
 
 <div class="grid md:grid-cols-3 gap-4 mt-6">
-<div class="border-[3px] border-black rounded-[20px] p-5"><b class="text-[10px]">USUARIOS REGISTRADOS</b><h2 id="totalUsuarios" class="font-black text-3xl">0</h2><p id="modoActual" class="text-[10px] mt-2 font-bold"></p></div>
+<div class="border-[3px] border-black rounded-[20px] p-5"><b class="text-[10px]">USUARIOS REGISTRADOS</b><h2 id="totalUsuarios" class="font-black text-3xl">0</h2><p id="modoActual" class="text-[10px] mt-2 font-bold text-green-600"></p></div>
 <div class="border-2 rounded-[20px] p-5"><b class="text-[10px]">VENTAS HOY</b><h2 class="font-black text-3xl">$0</h2><p class="text-[10px] text-zinc-500">Cuando conectes MercadoPago se ve acá</p></div>
 <div class="border-2 rounded-[20px] p-5 bg-yellow-50"><b class="text-[10px]">AFILIADOS PENDIENTES</b><p class="text-[11px] mt-2">Por ahora se piden por el form de la web. Acá los aprobás vos a mano.</p></div>
 </div>
@@ -80,7 +77,7 @@ window.addEventListener('load', cargarDatos);
 <h2 class="font-black text-sm">Cómo probar los packs ahora:</h2>
 <ul class="text-[11px] mt-3 list-disc ml-4 space-y-2">
 <li>Tocá arriba <b>VER PRO</b> o <b>VER PREMIUM</b></li>
-<li>Después andá a <b>VER WEB</b> y la página se va a comportar como si fueras PRO/PREMIUM</li>
+<li>Después andá a <b>VER WEB</b> y abajo te aparece el cartel verde "VIENDO COMO PRO"</li>
 <li>Cuando termines, volvé al admin y tocá <b>VOLVER A REAL</b></li>
 <li>Nadie más ve estos botones, solo vos porque tu mail es dariobrugo1@gmail.com</li>
 </ul>
