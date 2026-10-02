@@ -81,4 +81,28 @@ window.addEventListener('load', checkAdmin);
 
 <div class="max-w-6xl mx-auto px-6 text-center mt-6 mb-10"><a href="conversaciones.html" class="inline-block bg-black text-white px-8 py-3 rounded-xl font-black text-xs">Comprar conversaciones extra - Solo USD</a><p class="text-[9px] text-zinc-400 mt-2">$12 / $20 / $35 USD - Sin comisión afiliados</p></div>
 
+<script>
+// --- SISTEMA DE PRUEBA DE PLANES - SOLO PARA dariobrugo1@gmail.com - INICIO ---
+(function(){
+  const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+  const test = localStorage.getItem('test_plan_override');
+  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && test){
+    const banner = document.createElement('div');
+    banner.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#000; color:#00ff88; padding:12px 20px; border-radius:99px; font-size:11px; font-weight:900; z-index:9999; border:2px solid #00ff88; box-shadow:0 10px 30px rgba(0,0,0,0.5);";
+    banner.innerHTML = `🔧 VIENDO COMO ${test.toUpperCase()} | <a href="admin.html" style="color:white; text-decoration:underline;">VOLVER A ADMIN</a> <span onclick="localStorage.removeItem('test_plan_override'); location.reload();" style="margin-left:10px; background:#00ff88; color:black; padding:4px 10px; border-radius:99px; cursor:pointer;">X REAL</span>`;
+    document.body.appendChild(banner);
+  }
+})();
+
+function getPlanActual(planReal){
+  const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
+  const test = localStorage.getItem('test_plan_override');
+  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && test){
+    return test;
+  }
+  return planReal;
+}
+// --- SISTEMA DE PRUEBA - FIN ---
+</script>
+
 </body></html>
