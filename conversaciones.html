@@ -3,10 +3,38 @@
 <h1 class="font-black text-2xl">Packs de conversaciones extra</h1>
 <p class="text-[11px] text-zinc-600 mt-1">Cuando se te acaban las 1000 gratis. Solo en USD. <b>Afiliados NO ganan comisión.</b></p>
 <div class="grid gap-4 mt-6">
-<div class="border-2 border-black rounded-[20px] p-5 text-center"><b class="text-xs">250 CONVERSACIONES</b><h3 class="font-black text-lg">$12 USD</h3><p class="text-[10px] text-zinc-500">$0.048 por conversación</p><button onclick="alert('Link de pago 250 conv - $12 USD')" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 250 - $12 USD</button></div>
-<div class="border-2 border-black rounded-[20px] p-5 text-center"><b class="text-xs">500 CONVERSACIONES</b><h3 class="font-black text-lg">$20 USD</h3><p class="text-[10px] text-zinc-500">$0.04 por conversación</p><button onclick="alert('Link de pago 500 conv - $20 USD')" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 500 - $20 USD</button></div>
-<div class="border-[3px] border-black rounded-[20px] p-5 text-center bg-yellow-50"><b class="text-xs">1000 CONVERSACIONES</b><h3 class="font-black text-lg">$35 USD</h3><p class="text-[10px] text-zinc-500">$0.035 por conversación - Mejor precio</p><button onclick="alert('Link de pago 1000 conv - $35 USD')" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 1000 - $35 USD</button></div>
+<div class="border-2 border-black rounded-[20px] p-5 text-center"><b class="text-xs">250 CONVERSACIONES</b><h3 class="font-black text-lg">$12 USD</h3><p class="text-[10px] text-zinc-500">$0.048 por conversación</p><button onclick="comprar('250')" id="btn250" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 250 - $12 USD</button></div>
+<div class="border-2 border-black rounded-[20px] p-5 text-center"><b class="text-xs">500 CONVERSACIONES</b><h3 class="font-black text-lg">$20 USD</h3><p class="text-[10px] text-zinc-500">$0.04 por conversación</p><button onclick="comprar('500')" id="btn500" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 500 - $20 USD</button></div>
+<div class="border-[3px] border-black rounded-[20px] p-5 text-center bg-yellow-50"><b class="text-xs">1000 CONVERSACIONES</b><h3 class="font-black text-lg">$35 USD</h3><p class="text-[10px] text-zinc-500">$0.035 por conversación - Mejor precio</p><button onclick="comprar('1000')" id="btn1000" class="bg-black text-white px-6 py-2 rounded-xl font-black text-xs mt-3 w-full">Comprar 1000 - $35 USD</button></div>
 </div>
 <p class="text-[9px] text-zinc-400 mt-4 text-center">Pagos en USD por PayPal / Payoneer / Wise. Con $5 USD de ganancia incluida. No genera comisión afiliados.</p>
 <a href="index.html" class="text-[11px] underline mt-8 block text-center font-black">← VOLVER AL INICIO</a>
+
+<script>
+async function comprar(pack) {
+  const btn = document.getElementById('btn' + pack);
+  btn.innerText = 'GENERANDO LINK...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/pagos.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pack: pack, type: 'conversaciones' })
+    });
+    const data = await res.json();
+    if(data.url) {
+      window.location.href = data.url; // lo manda a pagar
+    } else {
+      alert('Error: ' + (data.error || 'No se pudo generar el pago'));
+      btn.innerText = 'Comprar ' + pack + ' - $' + (pack==250?12:pack==500?20:35) + ' USD';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Error de conexión con api/pagos.js');
+    btn.innerText = 'Comprar ' + pack + ' - $' + (pack==250?12:pack==500?20:35) + ' USD';
+    btn.disabled = false;
+  }
+}
+</script>
 </body></html>
