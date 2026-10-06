@@ -1,101 +1,63 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel Admin - Autoturnos</title><script src="https://cdn.tailwindcss.com"></script></head>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel Admin - Autoturnos</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
 <body class="bg-white text-black p-6">
-<div id="admin-bar" style="position:fixed; top:0; left:0; width:100%; background:#000; color:white; padding:12px; z-index:9999; text-align:center; border-bottom:3px solid #00ff88;">
-  <span style="font-weight:900; font-size:11px;">🔧 ADMIN: dariobrugo1@gmail.com</span>
-  <button onclick="setTestPlan('basico')" class="bg-white text-black px-3 py-1 rounded-full text-[10px] font-black m-1 ml-3">BÁSICO</button>
-  <button onclick="setTestPlan('pro')" class="bg-[#00ff88] text-black px-3 py-1 rounded-full text-[10px] font-black m-1">PRO</button>
-  <button onclick="setTestPlan('premium')" class="bg-yellow-400 text-black px-3 py-1 rounded-full text-[10px] font-black m-1">PREMIUM</button>
-  <button onclick="setTestPlan('real')" class="bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black m-1">REAL</button>
-  <span id="current-test-plan" style="margin-left:8px; font-size:10px; opacity:0.8; background:#222; padding:4px 8px; border-radius:20px;"></span>
+<div id="admin-bar" style="position:fixed;top:0;left:0;width:100%;background:#000;color:white;padding:12px;z-index:9999;text-align:center;border-bottom:3px solid #00ff88;">
+  <span style="font-weight:900;font-size:11px;">🔧 ADMIN: dariobrugo1@gmail.com</span>
+  <button onclick="probarComo('basico')" class="bg-white text-black px-3 py-1 rounded-full text-[10px] font-black m-1 ml-3">BÁSICO</button>
+  <button onclick="probarComo('pro')" class="bg-[#00ff88] text-black px-3 py-1 rounded-full text-[10px] font-black m-1">PRO</button>
+  <button onclick="probarComo('premium')" class="bg-yellow-400 text-black px-3 py-1 rounded-full text-[10px] font-black m-1">PREMIUM</button>
+  <button onclick="probarComo('real')" class="bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black m-1">REAL</button>
+  <span id="current-test" style="margin-left:8px;font-size:10px;background:#222;padding:4px 8px;border-radius:20px;"></span>
 </div>
 <div style="height:60px;"></div>
-<script>
-const ADMIN_EMAIL="dariobrugo1@gmail.com";
-const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
-if(!user || user.email.toLowerCase()!== ADMIN_EMAIL.toLowerCase()){
-  alert('Acceso solo admin'); window.location.href='login.html';
-}
-function salir(){ localStorage.removeItem('usuarioLogueado'); window.location.href='index.html'; }
-function cargarDatos(){
-  const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-  document.getElementById('totalUsuarios').textContent = usuarios.length;
-  const botActivo = localStorage.getItem('bot_activo')!== 'false';
-  const miUsuario = usuarios.find(u => u.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-  const planReal = miUsuario? (miUsuario.plan || 'basico') : 'basico';
-  document.getElementById('botSwitch').checked = botActivo;
-  const estadoEl = document.getElementById('botEstado');
-  estadoEl.textContent = botActivo? '🟢 BOT ACTIVO' : '🔴 BOT DESACTIVADO';
-  estadoEl.className = botActivo? 'font-black text-[12px] text-green-600 ml-2' : 'font-black text-[12px] text-red-600 ml-2';
-  document.getElementById('botEstadoTexto').textContent = botActivo? 'El bot está respondiendo mensajes de WhatsApp automáticamente.' : 'El bot está PAUSADO. No responde a nadie.';
-  document.getElementById('selectPlanReal').value = planReal;
-  let html='';
-  usuarios.forEach(u=>{
-    const plan = u.plan || 'basico';
-    const fecha = u.fecha? new Date(u.fecha).toLocaleDateString() : '-';
-    html+=`<div class="flex justify-between items-center border-b py-2 text-[11px]"><span>${u.email} <b class="ml-2 px-2 py-0.5 rounded-full bg-black text-white text-[9px]">${plan.toUpperCase()}</b></span><span class="text-zinc-400">${fecha}</span></div>`
-  });
-  document.getElementById('listaUsuarios').innerHTML = html || '<span class="text-[11px] text-zinc-500">Aún no hay usuarios</span>';
-  const test = localStorage.getItem('test_plan_override');
-  document.getElementById('current-test-plan').innerText = test? `VIENDO COMO: ${test.toUpperCase()}` : `REAL: ${planReal.toUpperCase()} | BOT: ${botActivo?'ON':'OFF'}`;
-  document.getElementById('modoActual').innerText = test? `Estás en MODO PRUEBA: ${test.toUpperCase()}` : `Estás en MODO REAL con plan ${planReal.toUpperCase()}`;
-}
-function setTestPlan(plan){
-  if(plan === 'real'){ localStorage.removeItem('test_plan_override'); }
-  else { localStorage.setItem('test_plan_override', plan); }
-  cargarDatos();
-  alert(plan === 'real'? 'Volviste a REAL' : `Ahora probando como ${plan.toUpperCase()} - Andá a VER WEB`);
-}
-function cambiarPlanReal(){
-  const nuevoPlan = document.getElementById('selectPlanReal').value;
-  let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-  let idx = usuarios.findIndex(u => u.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-  if(idx >= 0){ usuarios[idx].plan = nuevoPlan; }
-  else { usuarios.push({email: ADMIN_EMAIL, plan: nuevoPlan, fecha: new Date().toISOString()}); }
-  localStorage.setItem('usuarios', JSON.stringify(usuarios));
-  let sesion = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
-  if(sesion){ sesion.plan = nuevoPlan; localStorage.setItem('usuarioLogueado', JSON.stringify(sesion)); }
-  cargarDatos(); alert(`✅ Plan REAL cambiado a ${nuevoPlan.toUpperCase()}`);
-}
-function toggleBot(){
-  const activo = document.getElementById('botSwitch').checked;
-  localStorage.setItem('bot_activo', activo);
-  cargarDatos();
-}
-window.addEventListener('load', cargarDatos);
-</script>
 <div class="max-w-6xl mx-auto">
-<header class="flex justify-between items-center border-b pb-4"><h1 class="font-black text-2xl">PANEL ADMIN ÚNICO</h1><div class="flex gap-2"><a href="index.html" class="border-2 px-4 py-1 rounded-full text-[11px] font-black">VER WEB</a><button onclick="salir()" class="bg-black text-white px-4 py-1 rounded-full text-[11px] font-black">SALIR</button></div></header>
+<header class="flex justify-between items-center border-b pb-4"><h1 class="font-black text-2xl">PANEL ADMIN REAL</h1><a href="index.html" class="border-2 px-4 py-1 rounded-full text-[11px] font-black">VER WEB</a></header>
 <div class="grid md:grid-cols-2 gap-4 mt-6">
   <div class="border-[3px] border-black rounded-[24px] p-6 bg-white shadow-[4px_4px_0px_#000]">
-    <b class="text-[10px] tracking-widest">🤖 CONTROL DEL BOT - ON/OFF</b>
+    <b class="text-[10px]">🤖 MI BOT - ON/OFF REAL (SUPABASE)</b>
     <div class="flex items-center gap-3 mt-4">
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="botSwitch" onchange="toggleBot()" class="sr-only peer">
-        <div class="w-14 h-7 bg-zinc-200 rounded-full peer peer-checked:bg-[#00ff88] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-black after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
-      </label>
+      <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="botSwitch" class="sr-only peer"><div class="w-14 h-7 bg-zinc-200 rounded-full peer peer-checked:bg-[#00ff88] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-black after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-full"></div></label>
       <span id="botEstado" class="font-black text-[12px]"></span>
     </div>
-    <p id="botEstadoTexto" class="text-[11px] text-zinc-600 mt-3 leading-tight"></p>
+    <p class="text-[10px] mt-2 opacity-60">Esto prende/apaga tu bot de verdad, no el de prueba.</p>
   </div>
   <div class="border-[3px] border-black rounded-[24px] p-6 bg-[#00ff88]/30 shadow-[4px_4px_0px_#000]">
-    <b class="text-[10px] tracking-widest">💎 TU PACK REAL</b>
+    <b class="text-[10px]">💎 MI PACK REAL (SUPABASE)</b>
     <div class="flex gap-2 mt-4">
-      <select id="selectPlanReal" class="flex-1 border-[2px] border-black rounded-full px-4 py-2.5 text-[12px] font-black bg-white">
-        <option value="basico">BÁSICO - Solo agenda</option>
-        <option value="pro">PRO - Agenda + Recordatorios</option>
-        <option value="premium">PREMIUM - Todo + IA</option>
-      </select>
-      <button onclick="cambiarPlanReal()" class="bg-black text-white px-5 rounded-full text-[11px] font-black">GUARDAR</button>
+      <select id="selectPlan" class="flex-1 border-[2px] border-black rounded-full px-4 py-2.5 text-[12px] font-black bg-white"><option value="basico">BÁSICO</option><option value="pro">PRO</option><option value="premium">PREMIUM</option></select>
+      <button onclick="cambiarMiPlan()" class="bg-black text-white px-5 rounded-full text-[11px] font-black">GUARDAR EN SUPABASE</button>
     </div>
     <p id="modoActual" class="text-[10px] mt-3 font-bold"></p>
   </div>
 </div>
-<div class="grid md:grid-cols-3 gap-4 mt-4">
-<div class="border-2 rounded-[20px] p-5"><b class="text-[10px]">USUARIOS</b><h2 id="totalUsuarios" class="font-black text-3xl">0</h2></div>
-<div class="border-2 rounded-[20px] p-5"><b class="text-[10px]">VENTAS</b><h2 class="font-black text-3xl">$0</h2><p class="text-[10px] text-zinc-500">MercadoPago</p></div>
-<div class="border-2 rounded-[20px] p-5"><b class="text-[10px]">BOT STATUS</b><p class="text-[11px] mt-2">Este switch corta el bot de verdad. Si lo apagás, no contesta WhatsApp.</p></div>
+<div class="mt-6 border-[3px] border-black rounded-[28px] p-6"><h2 class="font-black">Clientes (Supabase)</h2><div id="lista" class="mt-4 text-[11px]">Cargando...</div></div>
 </div>
-<div class="mt-6 border-[3px] border-black rounded-[28px] p-6"><h2 class="font-black">Lista de usuarios</h2><div id="listaUsuarios" class="mt-4"></div></div>
-</div>
+<script>
+const SUPABASE_URL="https://lubackahcsgvffenzlyf.supabase.co";
+const SUPABASE_KEY="sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n";
+const ADMIN_EMAIL="dariobrugo1@gmail.com";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let testPlan = localStorage.getItem('test_plan_override') || null;
+
+async function cargar(){
+  document.getElementById('current-test').innerText = testPlan? `VIENDO COMO: ${testPlan.toUpperCase()}`: 'MODO REAL';
+  document.getElementById('modoActual').innerText = testPlan? `MODO PRUEBA: ${testPlan.toUpperCase()} (no guarda en Supabase)` : 'MODO REAL - Cambios guardan en Supabase';
+  try{
+    const { data: yo } = await supabaseClient.from('usuarios').select('*').eq('email', ADMIN_EMAIL).single();
+    if(yo){ document.getElementById('botSwitch').checked = yo.bot_activo!== false; document.getElementById('botEstado').textContent = yo.bot_activo!== false? '🟢 ACTIVO':'🔴 PAUSADO'; document.getElementById('selectPlan').value = yo.plan || 'basico'; }
+    const { data: usuarios } = await supabaseClient.from('usuarios').select('*').order('id');
+    let html='';
+    usuarios?.forEach(u=>{
+      html+=`<div class="flex justify-between items-center border-b py-3 text-[11px]"><span>${u.email} <b class="ml-2 px-2 py-0.5 rounded-full bg-black text-white text-[9px]">${(u.plan||'basico').toUpperCase()}</b> ${u.bot_activo===false?'<b class="text-red-600 ml-1">PAUSADO</b>':''} - ${u.conversaciones||0} conv</span><div class="flex gap-1"><button onclick="toggleCliente('${u.email}', ${u.bot_activo!== false})" class="border px-2 py-1 rounded-full text-[9px] font-black">${u.bot_activo!== false? 'PAUSAR':'ACTIVAR'}</button><select onchange="cambiarPlanCliente('${u.email}', this.value)" class="border rounded-full text-[9px] px-2 py-1"><option value="basico" ${u.plan==='basico'?'selected':''}>BAS</option><option value="pro" ${u.plan==='pro'?'selected':''}>PRO</option><option value="premium" ${u.plan==='premium'?'selected':''}>PRE</option></select></div></div>`;
+    });
+    document.getElementById('lista').innerHTML = html || 'No hay clientes aún';
+  }catch(e){ document.getElementById('lista').innerHTML = 'Error: '+e.message+' - Fijate si creaste la columna bot_activo'; console.log(e); }
+}
+async function toggleCliente(email, actual){ await supabaseClient.from('usuarios').update({bot_activo:!actual}).eq('email', email); cargar(); }
+async function cambiarPlanCliente(email, plan){ await supabaseClient.from('usuarios').update({plan}).eq('email', email); cargar(); }
+async function cambiarMiPlan(){ const p=document.getElementById('selectPlan').value; const {error} = await supabaseClient.from('usuarios').update({plan:p}).eq('email', ADMIN_EMAIL); if(error) alert('Error: '+error.message); else alert('Pack cambiado a '+p+' en Supabase'); cargar(); }
+document.getElementById('botSwitch').addEventListener('change', async e=>{ const {error} = await supabaseClient.from('usuarios').update({bot_activo:e.target.checked}).eq('email', ADMIN_EMAIL); if(error) alert('Tenés que crear la columna bot_activo en Supabase primero'); cargar(); });
+function probarComo(plan){ if(plan==='real'){ localStorage.removeItem('test_plan_override'); testPlan=null; } else { localStorage.setItem('test_plan_override', plan); testPlan=plan; } cargar(); }
+cargar();
+</script>
 </body></html>
