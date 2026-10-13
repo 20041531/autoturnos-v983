@@ -3,135 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario - Reserva</title>
+<title>Calendario</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial;padding:20px;background:#f5f5f5}
-.calendario{max-width:400px;background:white;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:auto;position:relative;overflow:hidden}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
-.dia{padding:12px;border-radius:8px;cursor:pointer;border:1px solid #eee}
-.dia.bloqueado{background:#ff4444;color:white;border-color:#ff4444}
-.dia.hoy{border:2px solid #2196F3}
-.dia.desactivado{opacity:0.3;cursor:not-allowed;background:#ddd}
-.dia.seleccionable:hover{background:#4CAF50;color:white}
-.nombreDia{font-weight:bold;color:#666;font-size:12px;padding:5px}
-button.nav{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:#2196F3;color:white;font-size:18px}
-#estado{margin-top:15px;font-weight:bold;color:#333}
-#candado{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.92);backdrop-filter:blur(4px);z-index:10;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
-#candado.oculto{display:none!important}
-.btn-pago{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;font-size:15px}
+.cal{max-width:400px;background:white;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);margin:auto;position:relative;overflow:hidden}
+.head{display:flex;justify-content:space-between;align-items:center}
+.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-top:12px}
+.d{padding:12px;border-radius:8px;border:1px solid #eee;background:#f2f2f2}
+.d.bloq{background:#ff4444;color:white}
+.d.hoy{border:2px solid #2196F3}
+#candado{position:absolute;inset:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);z-index:99;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}
+#candado.off{display:none}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:10px;cursor:pointer}
 .btn-mp{background:#009ee3;color:white}
-.btn-pp{background:#ffc439;color:#111}
+.btn-pp{background:#ffc439}
 </style>
 </head>
 <body>
-<div class="calendario" id="contenedorCalendario">
-  <div class="header">
-    <button class="nav" onclick="cambiarMes(-1)">‹</button>
-    <h3 id="mesAnio"></h3>
-    <button class="nav" onclick="cambiarMes(1)">›</button>
+<div class="cal">
+  <div class="head">
+    <button onclick="cm(-1)">‹</button>
+    <h3 id="mes"></h3>
+    <button onclick="cm(1)">›</button>
   </div>
-  <div class="dias" id="nombresDias"></div>
+  <div class="dias" style="font-weight:bold;color:#666;font-size:12px"><div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div></div>
   <div class="dias" id="dias"></div>
-  <p id="leyenda" style="margin-top:15px;font-size:13px"></p>
-  <p id="estado"></p>
+  <p id="estado" style="font-size:13px;color:#666"></p>
 
-  <!-- CANDADO SIEMPRE VISIBLE POR DEFECTO -->
   <div id="candado">
-    <div style="font-size:50px">🔒</div>
-    <h3 style="margin:10px 0">Calendario bloqueado</h3>
-    <p style="font-size:14px;color:#555">Se ve pero no se puede usar hasta pagar. Se desbloquea junto al bot.</p>
-    <button class="btn-pago btn-mp" onclick="pagarMP()">Pagar con Mercado Pago</button>
-    <button class="btn-pago btn-pp" onclick="pagarPayPal()">Pagar con PayPal</button>
-    <p style="font-size:11px;color:#999;margin-top:15px">Demo: al pagar se desbloquea</p>
+    <div style="font-size:60px">🔒</div>
+    <h3>Calendario bloqueado</h3>
+    <p style="font-size:14px;color:#555">Se ve pero no se puede usar hasta pagar</p>
+    <button class="btn btn-mp" onclick="pagar()">Pagar con Mercado Pago</button>
+    <button class="btn btn-pp" onclick="pagar()">Pagar con PayPal</button>
   </div>
 </div>
 
 <script>
-  const SUPABASE_URL = "https://lubackahcsgvffenzlyf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let fecha = new Date();
+let bloqueos = [];
+let desbloqueado = localStorage.getItem('compra_ok')==='true' || location.search.includes('pago');
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const esAdmin = urlParams.has('admin');
-  // SIEMPRE BLOQUEADO SALVO QUE HAYA PAGADO
-  const pagoHecho = localStorage.getItem('compra_ok') === 'true' || urlParams.has('pago') || urlParams.has('success') || urlParams.get('pago') === 'ok';
-  const estaDesbloqueado = esAdmin || pagoHecho;
+const supa = supabase.createClient("https://lubackahcsgvffenzlyf.supabase.co","sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n");
 
-  let fechaActual = new Date();
-  let bloqueos = [];
-
-  async function cargarBloqueos(){
-    const { data, error } = await supabaseClient.from('calendario_bloqueos').select('fecha');
-    if(error){ document.getElementById('estado').innerText = 'Error: '+error.message; return; }
-    bloqueos = data ? data.map(d => d.fecha) : [];
-    dibujarCalendario();
-    configurarVista();
+function dibujar(){
+  document.getElementById('mes').innerText = fecha.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  let y=fecha.getFullYear(), m=fecha.getMonth(), total=new Date(y,m+1,0).getDate();
+  let primer=new Date(y,m,1).getDay(); if(primer===0) primer=7;
+  let html='';
+  for(let i=1;i<primer;i++) html+='<div></div>';
+  for(let d=1;d<=total;d++){
+    let f=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let b=bloqueos.includes(f);
+    html+=`<div class="d ${b?'bloq':''}">${d}</div>`;
   }
+  document.getElementById('dias').innerHTML=html;
+  document.getElementById('candado').className = desbloqueado ? 'off' : '';
+  document.getElementById('estado').innerText = desbloqueado ? '✅ Desbloqueado' : '🔒 Bloqueado - Visible pero sin uso';
+}
 
-  function configurarVista(){
-    const candado = document.getElementById('candado');
-    const leyenda = document.getElementById('leyenda');
-    if(estaDesbloqueado){
-      candado.classList.add('oculto');
-      leyenda.innerText = '✅ Desbloqueado - Elegí tu día. Bot también desbloqueado';
-      document.getElementById('estado').innerText = esAdmin ? 'Modo ADMIN' : 'Pago confirmado';
-    } else {
-      candado.classList.remove('oculto');
-      leyenda.innerText = 'Calendario visible pero bloqueado hasta la compra';
-      document.getElementById('estado').innerText = '🔒 Esperando pago';
-    }
-  }
+async function cargarBloqueos(){
+  try{
+    const {data} = await supa.from('calendario_bloqueos').select('fecha');
+    if(data) bloqueos = data.map(x=>x.fecha);
+  }catch(e){ console.log('Supabase fallo, muestro igual',e) }
+  dibujar();
+}
 
-  function dibujarCalendario(){
-    const year = fechaActual.getFullYear();
-    const month = fechaActual.getMonth();
-    document.getElementById('mesAnio').innerText = fechaActual.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
-    const nombres = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
-    document.getElementById('nombresDias').innerHTML = nombres.map(n=>`<div class="nombreDia">${n}</div>`).join('');
-    const primerDia = new Date(year, month, 1);
-    const ultimoDia = new Date(year, month+1, 0);
-    let inicio = primerDia.getDay(); if(inicio===0) inicio=7;
-    let html = '';
-    for(let i=1;i<inicio;i++) html+=`<div></div>`;
-    for(let d=1; d<=ultimoDia.getDate(); d++){
-      const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const esBloqueado = bloqueos.includes(fechaStr);
-      const esHoy = new Date().toDateString() === new Date(year,month,d).toDateString();
-      let clase = `dia ${esHoy?'hoy':''}`;
-      let accion = '';
-      if(esBloqueado){
-        clase += ' bloqueado';
-      } else if(estaDesbloqueado){
-        clase += ' seleccionable';
-        accion = `onclick="reservarDia('${fechaStr}')"`;
-      } else {
-        clase += ' desactivado';
-      }
-      html+=`<div class="${clase}" ${accion}>${d}</div>`;
-    }
-    document.getElementById('dias').innerHTML = html;
-  }
+function cm(dir){fecha.setMonth(fecha.getMonth()+dir); dibujar()}
+function pagar(){localStorage.setItem('compra_ok','true'); desbloqueado=true; dibujar()}
 
-  function reservarDia(fecha){
-    document.getElementById('estado').innerText = `✅ Reservaste ${fecha} - Bot desbloqueado`;
-    alert('Día ' + fecha + ' reservado! Acá va tu bot');
-  }
-  function cambiarMes(dir){ fechaActual.setMonth(fechaActual.getMonth()+dir); dibujarCalendario(); }
-
-  function pagarMP(){
-    // CUANDO TENGAS LINK REAL: window.location.href = 'https://mpago.la/tu-link'
-    localStorage.setItem('compra_ok','true');
-    location.href = window.location.pathname + '?pago=ok';
-  }
-  function pagarPayPal(){
-    // CUANDO TENGAS LINK REAL: window.location.href = 'https://www.paypal.com/tu-link'
-    localStorage.setItem('compra_ok','true');
-    location.href = window.location.pathname + '?pago=ok';
-  }
-
-  cargarBloqueos();
+// DIBUJA SI O SI AUNQUE SUPABASE FALLE
+dibujar();
+cargarBloqueos();
 </script>
 </body>
 </html>
