@@ -3,45 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario - Bloquear Días</title>
+<title>Calendario - Reserva</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial;padding:20px;background:#f5f5f5}
-.calendario{max-width:400px;background:white;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:auto}
+.calendario{max-width:400px;background:white;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:auto;position:relative;overflow:hidden}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
 .dia{padding:12px;border-radius:8px;cursor:pointer;border:1px solid #eee}
 .dia.bloqueado{background:#ff4444;color:white;border-color:#ff4444}
 .dia.hoy{border:2px solid #2196F3}
+.dia.desactivado{opacity:0.3;cursor:not-allowed;background:#ddd}
+.dia.seleccionable:hover{background:#4CAF50;color:white}
 .nombreDia{font-weight:bold;color:#666;font-size:12px;padding:5px}
-button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:#2196F3;color:white;font-size:18px}
+button.nav{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:#2196F3;color:white;font-size:18px}
 #estado{margin-top:15px;font-weight:bold;color:#333}
+#candado{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);backdrop-filter:blur(3px);z-index:10;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
+.btn-pago{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;font-size:15px}
+.btn-mp{background:#009ee3;color:white}
+.btn-pp{background:#ffc439;color:#111}
 </style>
 </head>
 <body>
-<div class="calendario">
+<div class="calendario" id="contenedorCalendario">
   <div class="header">
-    <button onclick="cambiarMes(-1)">‹</button>
+    <button class="nav" onclick="cambiarMes(-1)">‹</button>
     <h3 id="mesAnio"></h3>
-    <button onclick="cambiarMes(1)">›</button>
+    <button class="nav" onclick="cambiarMes(1)">›</button>
   </div>
   <div class="dias" id="nombresDias"></div>
   <div class="dias" id="dias"></div>
-  <p style="margin-top:15px;font-size:13px">🔴 = Día bloqueado. Tocá para bloquear/desbloquear</p>
+  
+  <p id="leyenda" style="margin-top:15px;font-size:13px"></p>
   <p id="estado"></p>
+
+  <!-- CANDADO PARA CLIENTES -->
+  <div id="candado" style="display:none">
+    <div style="font-size:50px">🔒</div>
+    <h3 style="margin:10px 0">Calendario bloqueado</h3>
+    <p style="font-size:14px;color:#555">Comprá el producto para desbloquear la reserva</p>
+    
+    <!-- BOTONES DE PAGO - REEMPLAZA LOS LINKS -->
+    <button class="btn-pago btn-mp" onclick="simularPagoMP()">Pagar con Mercado Pago</button>
+    <button class="btn-pago btn-pp" onclick="simularPagoPayPal()">Pagar con PayPal</button>
+    
+    <p style="font-size:11px;color:#999;margin-top:15px">Después del pago se desbloquea automáticamente</p>
+  </div>
 </div>
+
 <script>
   const SUPABASE_URL = "https://lubackahcsgvffenzlyf.supabase.co";
   const SUPABASE_KEY = "sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // LOGICA DE ADMIN VS CLIENTE
+  const urlParams = new URLSearchParams(window.location.search);
+  const esAdmin = urlParams.has('admin');
+  const pagoHecho = localStorage.getItem('compra_ok') === 'true' || urlParams.has('pago') || urlParams.has('success');
+  const estaDesbloqueado = esAdmin || pagoHecho;
+
   let fechaActual = new Date();
   let bloqueos = [];
+
   async function cargarBloqueos(){
     const { data, error } = await supabaseClient.from('calendario_bloqueos').select('fecha');
     if(error){ document.getElementById('estado').innerText = 'Error: '+error.message; return; }
     bloqueos = data ? data.map(d => d.fecha) : [];
     dibujarCalendario();
+    configurarVista();
   }
+
+  function configurarVista(){
+    const candado = document.getElementById('candado');
+    const leyenda = document.getElementById('leyenda');
+    if(esAdmin){
+      candado.style.display = 'none';
+      leyenda.innerText = '🔴 = Día bloqueado. Tocá para bloquear/desbloquear (MODO ADMIN)';
+      document.getElementById('estado').innerText = 'Modo ADMIN activo';
+    } else if(estaDesbloqueado){
+      candado.style.display = 'none';
+      leyenda.innerText = '✅ Pago confirmado - Elegí tu día disponible';
+    } else {
+      candado.style.display = 'flex';
+      leyenda.innerText = 'Calendario visible pero bloqueado hasta la compra';
+    }
+  }
+
   function dibujarCalendario(){
     const year = fechaActual.getFullYear();
     const month = fechaActual.getMonth();
@@ -57,11 +104,29 @@ button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:
       const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const esBloqueado = bloqueos.includes(fechaStr);
       const esHoy = new Date().toDateString() === new Date(year,month,d).toDateString();
-      html+=`<div class="dia ${esBloqueado?'bloqueado':''} ${esHoy?'hoy':''}" onclick="toggleBloqueo('${fechaStr}')">${d}</div>`;
+      
+      let clase = `dia ${esHoy?'hoy':''}`;
+      let accion = '';
+
+      if(esBloqueado){
+        clase += ' bloqueado';
+      } else if(esAdmin){
+        clase += ' seleccionable';
+        accion = `onclick="toggleBloqueo('${fechaStr}')"`;
+      } else if(estaDesbloqueado){
+        clase += ' seleccionable';
+        accion = `onclick="reservarDia('${fechaStr}')"`;
+      } else {
+        clase += ' desactivado';
+      }
+
+      html+=`<div class="${clase}" ${accion}>${d}</div>`;
     }
     document.getElementById('dias').innerHTML = html;
   }
+
   async function toggleBloqueo(fecha){
+    if(!esAdmin) return;
     document.getElementById('estado').innerText = 'Guardando...';
     const existe = bloqueos.includes(fecha);
     let res;
@@ -71,7 +136,30 @@ button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:
     document.getElementById('estado').innerText = existe ? `Desbloqueado ${fecha}` : `Bloqueado ${fecha}`;
     await cargarBloqueos();
   }
+
+  function reservarDia(fecha){
+    document.getElementById('estado').innerText = `✅ Reservaste ${fecha} - Acá activas tu bot`;
+    // Acá pones: window.open('https://tu-bot.com?fecha='+fecha) o lo que uses
+    alert('Día ' + fecha + ' reservado! Acá conectás tu bot');
+  }
+
   function cambiarMes(dir){ fechaActual.setMonth(fechaActual.getMonth()+dir); dibujarCalendario(); }
+
+  // SIMULACION DE PAGOS - Reemplaza con tus links reales
+  function simularPagoMP(){
+    // Cuando tengas Mercado Pago, reemplaza esta linea por: window.location.href = 'TU_LINK_DE_MERCADOPAGO'
+    if(confirm('Simular pago con Mercado Pago OK? (Cuando pongas tu link real, esto irá a MP)')){
+      localStorage.setItem('compra_ok','true');
+      location.reload();
+    }
+  }
+  function simularPagoPayPal(){
+    if(confirm('Simular pago con PayPal OK?')){
+      localStorage.setItem('compra_ok','true');
+      location.reload();
+    }
+  }
+
   cargarBloqueos();
 </script>
 </body>
