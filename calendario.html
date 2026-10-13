@@ -30,7 +30,6 @@ body{font-family:Arial;padding:20px;background:#f5f5f5}
   <div class="dias" style="font-weight:bold;color:#666;font-size:12px"><div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div></div>
   <div class="dias" id="dias"></div>
   <p id="estado" style="font-size:13px;color:#666"></p>
-
   <div id="candado">
     <div style="font-size:60px">🔒</div>
     <h3>Calendario bloqueado</h3>
@@ -39,14 +38,23 @@ body{font-family:Arial;padding:20px;background:#f5f5f5}
     <button class="btn btn-pp" onclick="pagar()">Pagar con PayPal</button>
   </div>
 </div>
-
 <script>
+const ADMIN_EMAIL = "dariobrugo1@gmail.com";
 let fecha = new Date();
 let bloqueos = [];
-let desbloqueado = localStorage.getItem('compra_ok')==='true' || location.search.includes('pago');
 
+function esDesbloqueado(){
+  const url = new URLSearchParams(location.search);
+  if(url.has('admin') || url.has('pago') || url.has('pago=ok')) return true;
+  if(localStorage.getItem('compra_ok')==='true') return true;
+  try{
+    const user = JSON.parse(localStorage.getItem('usuarioLogueado')||'null');
+    if(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) return true;
+  }catch(e){}
+  return false;
+}
+let desbloqueado = esDesbloqueado();
 const supa = supabase.createClient("https://lubackahcsgvffenzlyf.supabase.co","sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n");
-
 function dibujar(){
   document.getElementById('mes').innerText = fecha.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
   let y=fecha.getFullYear(), m=fecha.getMonth(), total=new Date(y,m+1,0).getDate();
@@ -59,22 +67,19 @@ function dibujar(){
     html+=`<div class="d ${b?'bloq':''}">${d}</div>`;
   }
   document.getElementById('dias').innerHTML=html;
+  desbloqueado = esDesbloqueado();
   document.getElementById('candado').className = desbloqueado ? 'off' : '';
-  document.getElementById('estado').innerText = desbloqueado ? '✅ Desbloqueado' : '🔒 Bloqueado - Visible pero sin uso';
+  document.getElementById('estado').innerText = desbloqueado ? '✅ Desbloqueado (Admin / Pagado)' : '🔒 Bloqueado - Visible pero sin uso';
 }
-
 async function cargarBloqueos(){
   try{
     const {data} = await supa.from('calendario_bloqueos').select('fecha');
     if(data) bloqueos = data.map(x=>x.fecha);
-  }catch(e){ console.log('Supabase fallo, muestro igual',e) }
+  }catch(e){}
   dibujar();
 }
-
 function cm(dir){fecha.setMonth(fecha.getMonth()+dir); dibujar()}
-function pagar(){localStorage.setItem('compra_ok','true'); desbloqueado=true; dibujar()}
-
-// DIBUJA SI O SI AUNQUE SUPABASE FALLE
+function pagar(){localStorage.setItem('compra_ok','true'); dibujar()}
 dibujar();
 cargarBloqueos();
 </script>
