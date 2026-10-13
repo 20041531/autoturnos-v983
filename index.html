@@ -3,11 +3,27 @@
 <body class="bg-white text-black">
 <script>
 const ADMIN_EMAIL="dariobrugo1@gmail.com";
-const CLAVE_MAESTRA="edwardybella2026";
 function getTotal(p,m){let b=p==='basico'?25000:p==='pro'?35000:45000; let t=b*m; if(m===12) t*=0.9; return t;}
 let planActual=null, mesesSel=1;
-function abrirPanel(plan,meses){planActual=plan; mesesSel=meses; document.getElementById('panelCalendario').classList.remove('hidden'); document.getElementById('tituloPanel').textContent=plan.toUpperCase()+' - '+meses+' meses - Total $'+getTotal(plan,meses).toLocaleString()+(meses===12?' -10% OFF':''); document.getElementById('configBasico').classList.add('hidden');document.getElementById('configPro').classList.add('hidden');document.getElementById('configPremium').classList.add('hidden'); if(plan==='basico')document.getElementById('configBasico').classList.remove('hidden'); if(plan==='pro')document.getElementById('configPro').classList.remove('hidden'); if(plan==='premium')document.getElementById('configPremium').classList.remove('hidden'); document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});}
-function pagarFinal(){alert('Gracias! Plan: '+planActual+' '+mesesSel+' meses. Te contactamos para activar MercadoPago.');}
+function abrirPanel(plan,meses){
+  planActual=plan; mesesSel=meses;
+  document.getElementById('panelCalendario').classList.remove('hidden');
+  document.getElementById('tituloPanel').textContent=plan.toUpperCase()+' - '+meses+' meses - Total $'+getTotal(plan,meses).toLocaleString()+(meses===12?' -10% OFF':'');
+  document.getElementById('configBasico').classList.add('hidden');document.getElementById('configPro').classList.add('hidden');document.getElementById('configPremium').classList.add('hidden');
+  if(plan==='basico')document.getElementById('configBasico').classList.remove('hidden');
+  if(plan==='pro')document.getElementById('configPro').classList.remove('hidden');
+  if(plan==='premium')document.getElementById('configPremium').classList.remove('hidden');
+  document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});
+  // recarga el calendario para que tome el estado
+  document.getElementById('calFrame').src='/calendario.html?v='+Date.now();
+}
+function pagarFinal(){
+  localStorage.setItem('compra_ok','true');
+  document.getElementById('calFrame').src='/calendario.html?pago=ok';
+  document.getElementById('calFrame2').src='/calendario.html?pago=ok';
+  alert('¡Pago simulado OK! Calendario desbloqueado junto al bot. Plan: '+planActual+' '+mesesSel+' meses.');
+  document.getElementById('panelCalendario').scrollIntoView({behavior:'smooth'});
+}
 function irLogin(){ window.location.href='login.html'; }
 function checkAdmin(){
   const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
@@ -32,41 +48,39 @@ window.addEventListener('load', checkAdmin);
 <div class="grid md:grid-cols-3 gap-4 mt-8 text-left">
 
 <div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">BÁSICO - $25k / $25 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
-<li>Bot de WhatsApp</li>
-<li>1 horario fijo a elección</li>
-<li>1 idioma: ES o EN</li>
-<li>Tachar sábados y domingos</li>
-<li>Horario de apertura y cierre</li>
-<li>1000 conversaciones gratis</li>
+<li>Bot de WhatsApp</li><li>1 horario fijo a elección</li><li>1 idioma: ES o EN</li><li>Tachar sábados y domingos</li><li>Horario de apertura y cierre</li><li>1000 conversaciones gratis</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('basico',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('basico',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('basico',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
 <div class="border-[3px] border-black rounded-[28px] p-6 bg-zinc-50 relative"><div class="absolute -top-3 left-6 bg-black text-white text-[10px] px-3 py-1 rounded-full">MÁS ELEGIDO</div><b class="text-xs">PRO - $35k / $35 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
-<li>Bot de WhatsApp</li>
-<li>1 idioma: ES o EN</li>
-<li>Pregunta qué se hará y cambia la duración</li>
-<li>Tachar cualquier día</li>
-<li>Horario de apertura y cierre</li>
+<li>Bot de WhatsApp</li><li>1 idioma: ES o EN</li><li>Pregunta qué se hará y cambia la duración</li><li>Tachar cualquier día</li><li>Horario de apertura y cierre</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('pro',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('pro',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('pro',12)" class="bg-black text-white rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
 <div class="border-[3px] border-zinc-200 rounded-[28px] p-6"><b class="text-xs">PREMIUM - $45k / $45 USD</b><ul class="text-[11px] mt-3 list-disc ml-4 space-y-1">
-<li>Bot de WhatsApp</li>
-<li>2 idiomas: ES + EN</li>
-<li>Duración según servicio</li>
-<li>Tachar cualquier día</li>
-<li>Horario de apertura y cierre</li>
-<li>Varias personas por mismo horario</li>
+<li>Bot de WhatsApp</li><li>2 idiomas: ES + EN</li><li>Duración según servicio</li><li>Tachar cualquier día</li><li>Horario de apertura y cierre</li><li>Varias personas por mismo horario</li>
 </ul><div class="grid grid-cols-3 gap-2 mt-4"><button onclick="abrirPanel('premium',1)" class="border-2 border-black rounded-xl py-2 text-[11px] font-black">1 mes</button><button onclick="abrirPanel('premium',6)" class="border rounded-xl py-2 text-[11px]">6m</button><button onclick="abrirPanel('premium',12)" class="bg-zinc-100 rounded-xl py-2 text-[11px] font-black">12m -10%</button></div></div>
 
 </div>
 </section>
 
-<section id="panelCalendario" class="hidden max-w-6xl mx-auto p-6 border-[3px] border-black rounded-[28px] mb-10">
+<!-- CALENDARIO SIEMPRE VISIBLE PERO BLOQUEADO - ESTO ES LO QUE QUERIAS -->
+<section class="max-w-6xl mx-auto p-6">
+<div class="border-[3px] border-black rounded-[28px] p-6">
+<h2 class="font-black text-xl text-center">📅 Calendario de reservas (se desbloquea al pagar)</h2>
+<p class="text-xs text-center text-zinc-500 mt-2">Se ve siempre, pero está bloqueado hasta comprar Básico, Pro o Premium</p>
+<iframe id="calFrame2" src="/calendario.html" style="width:100%;height:550px;border:2px solid #eee;border-radius:16px;margin-top:15px" loading="lazy"></iframe>
+</div>
+</section>
+
+<section id="panelCalendario" class="hidden max-w-6xl mx-auto p-6 border-[3px] border-black rounded-[28px] mb-10 bg-yellow-50">
 <h2 id="tituloPanel" class="font-black text-xl"></h2>
 <div class="grid md:grid-cols-2 gap-6 mt-4">
+<div>
 <div id="configBasico" class="hidden space-y-2 text-xs"><b>Config Básico:</b> Bot WhatsApp + 1 horario fijo + 1 idioma + sáb/dom + apertura/cierre + 1000 conv</div>
 <div id="configPro" class="hidden space-y-2 text-xs"><b>Config Pro:</b> Bot + 1 idioma + duración variable + tachar cualquier día + apertura/cierre</div>
 <div id="configPremium" class="hidden space-y-2 text-xs"><b>Config Premium:</b> Bot + 2 idiomas + duración por servicio + tachar cualquier día + apertura/cierre + cupos múltiples</div>
-<div class="border-2 rounded-xl p-4 bg-zinc-50"><button onclick="pagarFinal()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm">Pagar plan - Activar bot</button><p class="text-[10px] text-zinc-500 mt-2 text-center">Pago por MercadoPago. Activación en 24hs.</p></div>
+<iframe id="calFrame" src="/calendario.html" style="width:100%;height:400px;border:2px solid #000;border-radius:16px;margin-top:15px"></iframe>
+</div>
+<div class="border-2 rounded-xl p-4 bg-white"><button onclick="pagarFinal()" class="w-full bg-black text-white py-3 rounded-xl font-black text-sm">Pagar plan - Activar bot + calendario</button><p class="text-[10px] text-zinc-500 mt-2 text-center">Al pagar se desbloquea el calendario y el bot juntos.</p></div>
 </div>
 </section>
 
@@ -80,29 +94,5 @@ window.addEventListener('load', checkAdmin);
 </section>
 
 <div class="max-w-6xl mx-auto px-6 text-center mt-6 mb-10"><a href="conversaciones.html" class="inline-block bg-black text-white px-8 py-3 rounded-xl font-black text-xs">Comprar conversaciones extra - Solo USD</a><p class="text-[9px] text-zinc-400 mt-2">$12 / $20 / $35 USD - Sin comisión afiliados</p></div>
-
-<script>
-// --- SISTEMA DE PRUEBA DE PLANES - SOLO PARA dariobrugo1@gmail.com - INICIO ---
-(function(){
-  const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
-  const test = localStorage.getItem('test_plan_override');
-  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && test){
-    const banner = document.createElement('div');
-    banner.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#000; color:#00ff88; padding:12px 20px; border-radius:99px; font-size:11px; font-weight:900; z-index:9999; border:2px solid #00ff88; box-shadow:0 10px 30px rgba(0,0,0,0.5);";
-    banner.innerHTML = `🔧 VIENDO COMO ${test.toUpperCase()} | <a href="admin.html" style="color:white; text-decoration:underline;">VOLVER A ADMIN</a> <span onclick="localStorage.removeItem('test_plan_override'); location.reload();" style="margin-left:10px; background:#00ff88; color:black; padding:4px 10px; border-radius:99px; cursor:pointer;">X REAL</span>`;
-    document.body.appendChild(banner);
-  }
-})();
-
-function getPlanActual(planReal){
-  const user = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null');
-  const test = localStorage.getItem('test_plan_override');
-  if(user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && test){
-    return test;
-  }
-  return planReal;
-}
-// --- SISTEMA DE PRUEBA - FIN ---
-</script>
 
 </body></html>
