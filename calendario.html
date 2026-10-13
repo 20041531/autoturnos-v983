@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario - Bloquear Días</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial;padding:20px;background:#f5f5f5}
+.calendario{max-width:400px;background:white;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.dia{padding:12px;border-radius:8px;cursor:pointer;border:1px solid #eee}
+.dia.bloqueado{background:#ff4444;color:white;border-color:#ff4444}
+.dia.hoy{border:2px solid #2196F3}
+.nombreDia{font-weight:bold;color:#666;font-size:12px;padding:5px}
+button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:#2196F3;color:white;font-size:18px}
+#estado{margin-top:15px;font-weight:bold;color:#333}
+</style>
+</head>
+<body>
+<div class="calendario">
+  <div class="header">
+    <button onclick="cambiarMes(-1)">‹</button>
+    <h3 id="mesAnio"></h3>
+    <button onclick="cambiarMes(1)">›</button>
+  </div>
+  <div class="dias" id="nombresDias"></div>
+  <div class="dias" id="dias"></div>
+  <p style="margin-top:15px;font-size:13px">🔴 = Día bloqueado. Tocá para bloquear/desbloquear</p>
+  <p id="estado"></p>
+</div>
+<script>
+  const SUPABASE_URL = "https://lubackahcsgvffenzlyf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_vqeil5OkuX--2lNQOweZtw_Q3oVUv0n";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let fechaActual = new Date();
+  let bloqueos = [];
+  async function cargarBloqueos(){
+    const { data, error } = await supabaseClient.from('calendario_bloqueos').select('fecha');
+    if(error){ document.getElementById('estado').innerText = 'Error: '+error.message; return; }
+    bloqueos = data ? data.map(d => d.fecha) : [];
+    dibujarCalendario();
+  }
+  function dibujarCalendario(){
+    const year = fechaActual.getFullYear();
+    const month = fechaActual.getMonth();
+    document.getElementById('mesAnio').innerText = fechaActual.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+    const nombres = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
+    document.getElementById('nombresDias').innerHTML = nombres.map(n=>`<div class="nombreDia">${n}</div>`).join('');
+    const primerDia = new Date(year, month, 1);
+    const ultimoDia = new Date(year, month+1, 0);
+    let inicio = primerDia.getDay(); if(inicio===0) inicio=7;
+    let html = '';
+    for(let i=1;i<inicio;i++) html+=`<div></div>`;
+    for(let d=1; d<=ultimoDia.getDate(); d++){
+      const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const esBloqueado = bloqueos.includes(fechaStr);
+      const esHoy = new Date().toDateString() === new Date(year,month,d).toDateString();
+      html+=`<div class="dia ${esBloqueado?'bloqueado':''} ${esHoy?'hoy':''}" onclick="toggleBloqueo('${fechaStr}')">${d}</div>`;
+    }
+    document.getElementById('dias').innerHTML = html;
+  }
+  async function toggleBloqueo(fecha){
+    document.getElementById('estado').innerText = 'Guardando...';
+    const existe = bloqueos.includes(fecha);
+    let res;
+    if(existe){ res = await supabaseClient.from('calendario_bloqueos').delete().eq('fecha', fecha); }
+    else { res = await supabaseClient.from('calendario_bloqueos').insert({fecha: fecha, motivo: 'Bloqueado manual'}); }
+    if(res.error){ document.getElementById('estado').innerText = 'Error: '+res.error.message; return; }
+    document.getElementById('estado').innerText = existe ? `Desbloqueado ${fecha}` : `Bloqueado ${fecha}`;
+    await cargarBloqueos();
+  }
+  function cambiarMes(dir){ fechaActual.setMonth(fechaActual.getMonth()+dir); dibujarCalendario(); }
+  cargarBloqueos();
+</script>
+</body>
+</html>
